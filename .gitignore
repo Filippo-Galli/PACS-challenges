@@ -1,0 +1,11 @@
+# Ignore the main executable
+main
+
+# Ignore all files in the obj directory
+obj/
+
+# You can also ignore other common files and directories, like:
+.vscode/
+
+# ignore pdf
+*.pdf

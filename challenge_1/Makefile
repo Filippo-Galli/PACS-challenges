@@ -21,6 +21,9 @@ OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 # Define the include path
 INCLUDES = -I$(INCLUDE_DIR)
 
+# Check if obj directory exists or create it
+$(shell mkdir -p $(OBJ_DIR))
+
 # Define the rule to build the target
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET)

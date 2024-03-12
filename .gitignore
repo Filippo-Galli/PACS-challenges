@@ -2,7 +2,7 @@
 main
 
 # Ignore all files in the obj directory
-obj/*.o
+obj/
 
 # You can also ignore other common files and directories, like:
 .vscode/

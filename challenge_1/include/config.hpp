@@ -1,6 +1,11 @@
 #pragma once
 
 #include <vector>
+#include <cmath>
+
+// Define the type of the variables
+typedef double format;
+typedef std::vector<format> vector;
 
 struct parameters {
   // Strategy of decay
@@ -12,19 +17,44 @@ struct parameters {
 
   // Stopping criteria
   int max_iter = 1000;
-  double step_length = 1e-6;
-  double residual = 1e-6;
+  format step_length = 1e-6;
+  format residual = 1e-6;
   
   // parameters for function decay 
-  double mu = 0.2;
-  double sigma = 0.1;
+  format mu = 0.2;
+  format sigma = 0.1;
 
   // initial guess
-  double alpha_0 = 0.1;
-  std::vector<double> x0;
+  format alpha_0 = 0.1;
+  vector x0{0, 0};
 
 };
 
-double f(const std::vector<double> & x);
+/**
+  *  Function to be minimized
+  *  f(x) = x1*x2 + 4*x1^4 + x2^2 + 3*x1
+  *  Gradient of the function
+  *  grad(f) = [x2 + 16*x1^3 + 3, x1 + 2*x2]
+*/
+template<typename T_input, typename T_output>
+T_output f(const T_input & x){
+  /** @brief Function to be minimized
+   *  @param x: vector of variables
+   *  @return value of the function
+   */
 
-std::vector<double> grad(const std::vector<double> & x);
+  return x[0]*x[1] + 4*std::pow(x[0], 4) + std::pow(x[1], 2) + 3*x[0];
+}
+
+template <typename T>
+T grad(const T & x){
+  /** @brief Gradient of the function to be minimized
+   *  @param x: vector of variables
+   *  @return gradient of the function
+   */
+  T grad(2);
+  grad[0] = x[1] + 16*std::pow(x[0], 3) + 3;
+  grad[1] = x[0] + 2*x[1];
+
+  return grad;
+}

@@ -19,3 +19,11 @@ chmod -R 777 /path/to/host/folder
 ## Challenge 1
 
 Develop the gradient descendent method. 
+
+All the object files (.o) will be store in the obj/ directory. 
+To compile all use: 
+```bash
+make
+``` 
+
+To configure it use the file config.hpp where you can setup all the parameters, the function and the gradient to use. There is the possibility to change the return type of the function and the gradient, do it carefully.  

@@ -36,7 +36,7 @@ make clean; make
 ### Parameters 
 Strategy parameters:
 
-- __mode:__ Define which strategy use to update $x_k$, already implemented are: _Heavy-Ball_, _Nesterov_ and _Default_ [$x_{k+1} = x_k - \alpha_k \nabla f(x_k)$];
+- __mode:__ Define which strategy use to update $x_k$, already implemented are: _Heavy-Ball_, _Nesterov_ and _Default_ which is ![Default mode formula](./img/challenge_1/Default_mode.svg)
 - __strategy:__ Define which strategy use to update $\alpha_k$, already implemented are: _exponential decay_, _Inverse decay_, _Approximate Line Search (Armijo rule)_; 
 
 Stopping criteria:

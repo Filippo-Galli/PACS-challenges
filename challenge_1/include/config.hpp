@@ -3,17 +3,26 @@
 #include <vector>
 #include <cmath>
 
+/**
+ * @brief Mode of the program
+ * 0 - Default
+ * 1 - Heavy Ball
+ * 2 - Nesterov
+*/ 
+#define mode 0
+
 // Define the type of the variables
 typedef double format;
 typedef std::vector<format> vector;
 
 struct parameters {
-  // Strategy of decay
-  // 1: exonential
-  // 2: Inverse
-  // 3: Approximate Line Search (Armijo rule)
-  
-  int strategy = 3;
+  /* 
+  Strategy of decay:
+  1 - exponential
+  2 - Inverse
+  3 - Approximate Line Search (Armijo rule)
+  */
+  int strategy = 1;
 
   // Stopping criteria
   int max_iter = 1000;
@@ -23,6 +32,9 @@ struct parameters {
   // parameters for function decay 
   format mu = 0.2;
   format sigma = 0.1;
+
+  // parameters for heavy_ball method
+  format nu = 0.9;
 
   // initial guess
   format alpha_0 = 0.1;

@@ -26,4 +26,31 @@ To compile all use:
 make
 ``` 
 
-To configure it use the file config.hpp where you can setup all the parameters, the function and the gradient to use. There is the possibility to change the return type of the function and the gradient, do it carefully.  
+To configure it use the file config.hpp where you can setup all the parameters, the function and the gradient to use. There is the possibility to change the return type of the function and the gradient, do it carefully.
+
+If you change some parameters in _config.hpp_, I recommend to use this: 
+```bash
+make clean; make
+```
+
+### Parameters 
+Strategy parameters:
+
+- __mode:__ Define which strategy use to update $x_k$, already implemented are: _Heavy-Ball_, _Nesterov_ and _Default_ [$x_{k+1} = x_k - \alpha_k \nabla f(x_k)$];
+- __strategy:__ Define which strategy use to update $\alpha_k$, already implemented are: _exponential decay_, _Inverse decay_, _Approximate Line Search (Armijo rule)_; 
+
+Stopping criteria:
+
+- __max_iter:__ n° of maximum iteration;
+- __step_length:__ minimum distance between x_k and $x_{k+1}$;
+- __residual:__ minimum norm for the gradient of $f(x)$;
+
+Parameters needed by some mode or strategy: 
+
+- __mu:__ parameter for the exponential decay strategy; 
+- __sigma:__ parameter for the Armijo rule in the Approximate Line Search strategy; 
+- __nu:__ parameter for the Heavy-ball mode; 
+
+Initial parameters: 
+- __alpha_0:__ starting $\alpha_k$;
+- __x0:__ starting $x_k$;

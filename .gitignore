@@ -9,3 +9,9 @@ obj/
 
 # ignore pdf
 *.pdf
+
+#ignore parameters file
+parameters.dat
+
+# ignore .gitignore file
+.gitignore

@@ -58,7 +58,7 @@ format function(const vector & x){
    *  @return value of the function
    */
 
-  return x[0]*x[1] + 4*std::pow(x[0], 4) + std::pow(x[1], 2) + 3*x[0];
+  return x[0] + 4*std::pow(x[0], 4) + std::pow(x[1], 2) + 3*x[0];
 }
 
 
@@ -67,7 +67,7 @@ vector gradient(const vector & x){
    *  @param x: vector of variables
    *  @return gradient of the function
    */
-  vector grad(2);
+  vector grad(x.size());
   grad[0] = x[1] + 16*std::pow(x[0], 3) + 3;
   grad[1] = x[0] + 2*x[1];
 

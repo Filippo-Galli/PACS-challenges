@@ -129,9 +129,6 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     if(!err){
       display_result(x, temp_grad, x_diff, k, f);
     }
-    else{
-      std::cerr << "Error in the computation" << std::endl;
-    }
   }
 #elif mode == 2 // Nesterov mode
   void gradient_descent(const parameters &p, const gradient_wrapper & grad, const function_wrapper & f) {
@@ -175,9 +172,6 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     if(!err){
       display_result(x, temp_grad, x_diff, k, f);
     }
-    else{
-      std::cerr << "Error in the computation" << std::endl;
-    }
 
   }
 #else // default mode 
@@ -220,9 +214,6 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
 
     if(!err){
       display_result(x, temp_grad, x_diff, k, f);
-    }
-    else{
-      std::cerr << "Error in the computation" << std::endl;
     }
   }
 #endif

@@ -15,3 +15,6 @@ parameters.dat
 
 # ignore .gitignore file
 .gitignore
+
+#ignore test
+test/

@@ -16,7 +16,7 @@
  * 0 - Use the right gradient
  * 1 - Approximate the gradient
 */
-#define grad_mode 0
+#define grad_mode 1
 
 // Define the type of the variables, in this way is easy to change update for example to float or to Eigen::VectorXd
 typedef double format;
@@ -29,7 +29,7 @@ struct parameters {
   2 - Inverse
   3 - Approximate Line Search (Armijo rule)
   */
-  int strategy = 1;
+  int strategy = 2;
 
   // Stopping criteria
   int max_iter = 1000;

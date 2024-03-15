@@ -15,11 +15,11 @@ format decay(const parameters & p, const vector & x, const int k, format alpha_0
 
   // exponential decay
   if constexpr (strategy == 1) 
-    return alpha_0 * exp(-p.mu * k);
+    return p.alpha_0 * exp(-p.mu * k);
 
   // inverse decay
   else if constexpr (strategy == 2) 
-    return alpha_0 / (1 + p.mu * k);
+    return p.alpha_0 / (1 + p.mu * k);
   
   // approximate line search with Armijo rule
   else if constexpr (strategy == 3 and mode == 0) { 
@@ -30,18 +30,19 @@ format decay(const parameters & p, const vector & x, const int k, format alpha_0
     vector temp_grad = grad(x);
     vector temp_x = subtraction_vector(x, scalar_vector(temp_grad, alpha_0));
 
+    format temp_alpha = p.alpha_0;
     while (!exit) {
       // check condition of Amijo rule
       format temp_norm = norm2(temp_grad);
-      if(f(x) - f(temp_x) >= p.sigma * alpha_0 * temp_norm * temp_norm)
+      if(f(x) - f(temp_x) >= p.sigma * temp_alpha * temp_norm * temp_norm)
         exit = true; 
       else{
-        alpha_0 /= 2;
-        temp_x = subtraction_vector(x, scalar_vector(temp_grad, alpha_0));
+        temp_alpha /= 2;
+        temp_x = subtraction_vector(x, scalar_vector(temp_grad, temp_alpha));
       }
     }
 
-    return alpha_0;
+    return temp_alpha;
   }
 }
 
@@ -147,15 +148,15 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     while(!exit and k < p.max_iter) {
       ++k;
 
+      // Calculate the gradient at the lookahead position
+      temp_grad = grad(x);
+
       // Calculate x
       x = subtraction_vector(x_old, scalar_vector(temp_grad, alpha));
 
       // Calculate y (the lookahead position)
       x_diff = subtraction_vector(x, x_old);
       y = sum_vector(x, scalar_vector(x_diff, p.nu));
-
-      // Calculate the gradient at the lookahead position
-      temp_grad = grad(y);
 
       // Check stopping criteria
       if(norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length) {

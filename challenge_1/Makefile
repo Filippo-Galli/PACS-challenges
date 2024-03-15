@@ -4,6 +4,9 @@ CXX = g++
 # Define compiler flags
 CXXFLAGS = -Wall -Wextra -std=c++20
 
+# Define the number of threads to use for the build
+MAKEFLAGS += -j2
+
 # Define the paths to the source, include and objects directories
 SRC_DIR = src
 INCLUDE_DIR = include

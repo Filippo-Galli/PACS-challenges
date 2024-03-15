@@ -203,7 +203,6 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
       temp_grad = grad(x); // to set the correct gradient to check
         if(norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length)
           exit = true;
-
       
 
       else{
@@ -236,6 +235,6 @@ int main(){
 
     //launch the gradient descent
     gradient_descent(p, wrap_grad, wrap_f);
-
+    
     return 0;
 }

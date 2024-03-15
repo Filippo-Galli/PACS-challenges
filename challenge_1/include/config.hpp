@@ -29,7 +29,7 @@ struct parameters {
   2 - Inverse
   3 - Approximate Line Search (Armijo rule)
   */
-  int strategy = 2;
+  int strategy = 1;
 
   // Stopping criteria
   int max_iter = 1000;
@@ -58,7 +58,7 @@ format function(const vector & x){
    *  @return value of the function
    */
 
-  return x[0] + 4*std::pow(x[0], 4) + std::pow(x[1], 2) + 3*x[0];
+  return x[0]*x[1] + 4*std::pow(x[0], 4) + std::pow(x[1], 2) + 3*x[0];
 }
 
 

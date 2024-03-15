@@ -12,49 +12,14 @@ Then, you can run the container using the following command:
 ```bash 
 docker run --name pacs-env -v /path/to/host/folder:/home/jammy/shared-folder -it -d albertoartoni1995/mk
 ```
-I have the issue that I can't compile or modify any file in the shared folder. To solve this, I run the following command to modify the permission of read/write of the folder:
+
+__TIPS & TRICKS:__
+I have the issue that I can't compile or modify any file in the shared folder (I'm running the docker container in Arch Linux to have a well-set environment with all things done). To solve this, I run the following command to modify the permission of read/write of the folder:
 ```bash 
 chmod -R 777 /path/to/host/folder
 ```
 ## Challenge 1
 
-Develop the gradient descendent method. 
+Develop the gradient descent method. 
 
-All the object files (.o) will be store in the obj/ directory. 
-To compile all use: 
-```bash
-make
-``` 
-
-To configure it use the file config.hpp where you can setup all the parameters, the function and the gradient to use. There is the possibility to change the return type of the function and the gradient, do it carefully.
-
-If you change some parameters in _config.hpp_, I recommend to use this: 
-```bash
-make clean; make
-```
-
-### Parameters 
-Strategy parameters:
-
-- __mode:__ Define which strategy use to update $x_k$, already implemented are: _Heavy-Ball_, _Nesterov_ and _Default_ which is ![Default mode formula](./img/challenge_1/Default_mode.png)
-- __strategy:__ Define which strategy use to update $\alpha_k$, already implemented are: _exponential decay_, _Inverse decay_, _Approximate Line Search (Armijo rule)_; 
-- __grad_mode:__ Define if use the gradient define or approximate it
-
-Stopping criteria:
-
-- __max_iter:__ n° of maximum iteration;
-- __step_length:__ minimum distance between x_k and $x_{k+1}$;
-- __residual:__ minimum norm for the gradient of $f(x)$;
-
-Parameters needed by some mode or strategy: 
-
-- __mu:__ parameter for the exponential decay strategy; 
-- __sigma:__ parameter for the Armijo rule in the Approximate Line Search strategy; 
-- __nu:__ parameter for the Heavy-ball mode; 
-
-Initial parameters: 
-- __alpha_0:__ starting $\alpha_k$;
-- __x0:__ starting $x_k$;
-
-
-- __h:__ Step-lentgh for the approximate gradient
+More details in the README inside the folder challenge_1

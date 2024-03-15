@@ -2,12 +2,11 @@
 #include "config.hpp"
 
 template<int strategy>
-format decay(const parameters & p, const vector & x, const int k, format alpha_0, const gradient_wrapper & grad, const function_wrapper & f){
+format decay(const parameters & p, const vector & x, const int k, const gradient_wrapper & grad, const function_wrapper & f){
 
   /** 
    *  @brief Function to decay the learning rate
    *  @param p: parameters
-   *  @param alpha_0: initial learning rate
    *  @param x: vector of variables
    *  @param k: iteration number
    *  @return new learning rate
@@ -28,10 +27,11 @@ format decay(const parameters & p, const vector & x, const int k, format alpha_0
 
     // temporary variables
     vector temp_grad = grad(x);
-    vector temp_x = subtraction_vector(x, scalar_vector(temp_grad, alpha_0));
-
+    vector temp_x = subtraction_vector(x, scalar_vector(temp_grad, p.alpha_0));
+    
     format temp_alpha = p.alpha_0;
     while (!exit) {
+
       // check condition of Amijo rule
       format temp_norm = norm2(temp_grad);
       if(f(x) - f(temp_x) >= p.sigma * temp_alpha * temp_norm * temp_norm)
@@ -46,8 +46,9 @@ format decay(const parameters & p, const vector & x, const int k, format alpha_0
   }
 }
 
-void strategy_chooser(format & alpha, bool & exit, bool & err,
-                      const parameters & p, const vector & x, const gradient_wrapper & grad, const function_wrapper & f, const int k = 1){
+void strategy_chooser(format & alpha, bool & exit, bool & err, const parameters & p, 
+                      const vector & x, const gradient_wrapper & grad, const function_wrapper & f, 
+                      const int k = 1){
   /** 
    *  @brief Function to choose the strategy
    *  @param alpha: learning rate
@@ -61,14 +62,14 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
 
   switch (p.strategy) {
   case 1:
-      alpha = decay<1>(p, x, k, alpha, grad, f);
+      alpha = decay<1>(p, x, k, grad, f);
       break;
   case 2:
-      alpha = decay<2>(p, x, k, alpha, grad, f);
+      alpha = decay<2>(p, x, k, grad, f);
       break;
   default:
       if constexpr (mode == 0){
-        alpha = decay<3>(p, x, k, alpha, grad, f);
+        alpha = decay<3>(p, x, k, grad, f);
       }
       else{
         std::cerr << "\nWrong strategy" << std::endl;
@@ -96,20 +97,18 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     vector x(p.x0), temp_grad(grad(x));
     vector x_old(x_size), x_diff(x_size), temp1(x_size), temp2(x_size), d(x_size); 
 
+    // Calculate the value of d (d_0)
+    d = scalar_vector(temp_grad, -alpha);
+
     while(!exit and k < p.max_iter){
       ++k;
 
-      // update value of d
-      temp_grad = grad(x);
-      d = scalar_vector(temp_grad, -alpha);
-
-      // update and store value of x
+      // update and store value of x and old x
       x_old = x;
       x = sum_vector(x, d);
-      x_diff = subtraction_vector(x, x_old);
 
-      // set the correct gradient to check condition
-      temp_grad = grad(x); 
+      // stopping criteria variables update
+      x_diff = subtraction_vector(x, x_old);
 
       // check stopping criteria
       if( norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length)
@@ -117,12 +116,13 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
 
       else{
         // select strategy to decay alpha
-        strategy_chooser(alpha, exit, err, p, x, grad, f);
+        strategy_chooser(alpha, exit, err, p, x, grad, f, k);
 
         // update value of d
-        temp1 = scalar_vector(temp_grad, -alpha);
+        temp_grad = grad(x); 
+        temp1 = scalar_vector(temp_grad, alpha);
         temp2 = scalar_vector(d, p.nu);
-        d = sum_vector(temp2, temp1);
+        d = subtraction_vector(temp2, temp1);
 
       }
     }
@@ -131,6 +131,7 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
       display_result(x, temp_grad, x_diff, k, f);
     }
   }
+
 #elif mode == 2 // Nesterov mode
   void gradient_descent(const parameters &p, const gradient_wrapper & grad, const function_wrapper & f) {
     /** 
@@ -139,35 +140,45 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
      *  @return vector of variables representing the optimized position
      */
 
+    // x_old = x_{k-1}
+    // x = x_k
+    // x_new = x_{k+1} 
+
     int k = 0;
     bool err = false, exit = false;
     format alpha = p.alpha_0;
     vector x_old(p.x0), temp_grad(grad(x_old));
-    vector x(x_old), x_diff, y;
+    vector x(x_old), x_new(x.size()), x_diff(x.size()), y(x.size());
+
+    // Calculate x_1
+    x = subtraction_vector(x_old, scalar_vector(temp_grad, alpha));
 
     while(!exit and k < p.max_iter) {
-      ++k;
+      ++k;      
 
-      // Calculate the gradient at the lookahead position
-      temp_grad = grad(x);
-
-      // Calculate x
-      x = subtraction_vector(x_old, scalar_vector(temp_grad, alpha));
-
-      // Calculate y (the lookahead position)
+      //set stopping condition variables
       x_diff = subtraction_vector(x, x_old);
-      y = sum_vector(x, scalar_vector(x_diff, p.nu));
+      temp_grad = grad(x);
 
       // Check stopping criteria
       if(norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length) {
-        break;
+        exit = true;
       }
+      else{
+        // select strategy to decay alpha
+        strategy_chooser(alpha, exit, err, p, x, grad, f, k);
 
-      // select strategy to decay alpha
-      strategy_chooser(alpha, exit, err, p, x, grad, f);
+        // Calculate y
+        y = sum_vector(x, scalar_vector(x_diff, p.nu));
 
-      // Update x_old for the next iteration
-      x_old = x;
+        // Calculate x_new
+        temp_grad = grad(y);
+        x_new = subtraction_vector(y, scalar_vector(temp_grad, alpha));
+        
+        // Update x_old and x for the next iteration
+        x_old = x;
+        x = x_new;
+      }
     }
 
     if(!err){
@@ -175,6 +186,7 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     }
 
   }
+
 #else // default mode 
   void gradient_descent(const parameters & p, const gradient_wrapper & grad, const function_wrapper & f){
     /** 
@@ -192,24 +204,33 @@ void strategy_chooser(format & alpha, bool & exit, bool & err,
     vector x_old(x_size), x_diff(x_size);
     vector x(p.x0), temp_grad(grad(x));
 
+    // save the old value of x
+    x_old = x;
+
+    // update x
+    temp_grad = grad(x);
+    x = subtraction_vector(x, scalar_vector(temp_grad, alpha));
+
     while(!exit and k < p.max_iter){
       ++k;
 
-        x_old = x;
-        temp_grad = grad(x); // to set the correct gradient to check
-        x = subtraction_vector(x, scalar_vector(temp_grad, alpha));
-        x_diff = subtraction_vector(x, x_old);
-    
+      // check variables update
+      x_diff = subtraction_vector(x, x_old);
+      temp_grad = grad(x);
 
-      temp_grad = grad(x); // to set the correct gradient to check
-        if(norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length)
-          exit = true;
-      
-
+      if(norm2(temp_grad) < p.residual || norm2(x_diff) < p.step_length)
+        exit = true;
       else{
-        // select strategy to decay alpha
-        strategy_chooser(alpha, exit, err, p, x, grad, f);
+        strategy_chooser(alpha, exit, err, p, x, grad, f, k);
+
+        // save the old value of x
+        x_old = x;
+
+        // update x
+        temp_grad = grad(x);
+        x = subtraction_vector(x, scalar_vector(temp_grad, alpha));
       }
+
     }
 
     if(!err){

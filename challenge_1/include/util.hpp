@@ -155,9 +155,9 @@ void display_result(const vector & x, const vector & temp_grad, const vector & x
   std::cout << "++++++++++++ NERD STATS ++++++++++++" << std::endl;
   std::cout << "++++++++++++++++++++++++++++++++++++\n" << std::endl;
   std::cout << "- Iteration done: " << k << std::endl;
-  std::cout << "- Residual: " << std::sqrt(norm2(temp_grad)) << std::endl;
+  std::cout << "- Residual: " << norm2(temp_grad) << std::endl;
   
-  std::cout << "- Step: " << std::sqrt(norm2(x_diff)) << std::endl;
+  std::cout << "- Step: " << norm2(x_diff) << std::endl;
 
   std::cout << "\n++++++++++++++++++++++++++++++++++++" << std::endl;
   std::cout << "++++++++++++++ RESULT ++++++++++++++" << std::endl;

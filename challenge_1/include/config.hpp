@@ -9,7 +9,7 @@
  * 1 - Heavy Ball
  * 2 - Nesterov
 */ 
-#define mode 2
+#define mode 1
 
 /**
  * @brief Use the right gradient or approximate it
@@ -29,7 +29,7 @@ struct parameters {
   2 - Inverse
   3 - Approximate Line Search (Armijo rule)
   */
-  int strategy = 2;
+  int strategy = 1;
 
   // Stopping criteria
   int max_iter = 1000;

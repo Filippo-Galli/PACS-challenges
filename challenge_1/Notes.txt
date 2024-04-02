@@ -1,0 +1,9 @@
+README is clear and detailed.
+
+No need to upload the Docker image to git. I can compile it on any Linux environment.
+
+Avoid using std::pow and try to use alternative implementations, as seen in the labs.
+
+You should separate the definition of functions from the main.
+
+You could let the user change the parameters runtime or from file.

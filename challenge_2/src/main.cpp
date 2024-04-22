@@ -1,6 +1,7 @@
 #include "Matrix.hpp"
 
-int main(){
+int main(int argc, char *argv[]){
+    /*
     algebra::Matrix<int, algebra::StorageOrder::RowMajor> m(4,6);
 
     // Fill the matrix
@@ -49,6 +50,21 @@ int main(){
     }
 
     std::cout << std::endl << m(1, 1)<<std::endl;
-    
+    */
+   if(argc == 1){
+       std::cout << "Usage: ./main <filename>" << std::endl;
+       return 1;
+   }
+   else if(argc > 2){
+       std::cout << "Too many arguments" << std::endl;
+       return 1;
+   }
+
+   std::string filename = argv[1];
+
+    algebra::Matrix<double, algebra::StorageOrder::ColumnMajor> m(filename);
+
+    m.print();
+
     return 0;
 }

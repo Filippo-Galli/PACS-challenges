@@ -5,6 +5,15 @@
 #include <array>
 #include <iostream>
 #include <vector>
+#include <sys/stat.h>
+#include <fstream>
+#include <sstream>
+
+#ifdef DEBUG
+#define DEBUG_MSG(msg) std::cout << msg << std::endl;
+#else
+#define DEBUG_MSG(msg)
+#endif
 
 namespace algebra{
 
@@ -23,12 +32,12 @@ namespace algebra{
     template <typename T, StorageOrder Order>
     class Matrix {
         private: 
-            mutable size_t rows, cols;
-            mutable std::map<std::array<std::size_t, 2>, T> data;
+            size_t rows = 0, cols = 0;
+            std::map<std::array<std::size_t, 2>, T> data;
 
-            mutable bool compressed = false;
+            bool compressed = false;
 
-            mutable CompressedMatrix<T> compressed_data;
+            CompressedMatrix<T> compressed_data;
 
             bool check_indexes(const size_t & index1, const size_t & index2) const{
                 /**
@@ -42,6 +51,53 @@ namespace algebra{
                     return index1 < rows && index2 < cols;
                 else
                     return index1 < cols && index2 < rows;    
+            }
+
+            void read_matrix_MM(const std::string & filename){
+                /**
+                 * @brief Read a matrix in Matrix Market format
+                 * @note This function will read a matrix in Matrix Market format
+                 * @param filename The name of the file
+                */
+
+                // check if the file is valid
+                struct stat buffer;   
+                if(stat(filename.c_str(), &buffer) == -1){
+                    throw std::runtime_error("file not found");
+                } 
+
+                std::ifstream file(filename);
+                int nonzeros = 0;
+
+                // skip comments + read the number of rows, columns and nonzeros
+                std::string line;
+                bool exit = false;
+                
+                // TODO: try to improve it, use 1 between getline and istringstream
+                while (!exit)
+                {
+                    getline(file, line);
+                    if (line[0] != '%'){
+                        std::istringstream useful_data(line);
+                        useful_data >> rows >> cols >> nonzeros;
+                        exit = true;
+                    }
+                }
+                
+                // read the matrix
+                size_t row, col;
+                T value;
+                for (int i = 0; i < nonzeros; ++i) {
+                    file >> row >> col >> value;
+                    if constexpr(Order == StorageOrder::RowMajor)
+                        data[{row - 1, col - 1}] = value;
+                    else
+                        data[{col - 1, row - 1}] = value;
+                }
+                //std::endl(std::cout);
+
+                file.close();
+
             }
         
         public:
@@ -69,6 +125,16 @@ namespace algebra{
                     this->rows = idx2;
                 }
             
+            }
+
+            Matrix(const std::string & filename){
+                /**
+                 * @brief Constructor for the Matrix class
+                 * @note This constructor will read a matrix in Matrix Market format
+                 * @param filename The name of the file
+                */
+
+                read_matrix_MM(filename);
             }
 
             void print() const{
@@ -125,7 +191,7 @@ namespace algebra{
                  * @return The value of the matrix in the position (index1, index2)
                 */
 
-                std::cout << "Operator()" << std::endl;
+                DEBUG_MSG("Operator() non-const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed()){
                         if(data.find({index1, index2}) == data.end())
@@ -134,7 +200,6 @@ namespace algebra{
                         return data[{index1, index2}];
                     }
                     else{
-                        bool found = false;
                         size_t idx = compressed_data.inner_idx[index1];
 
                         while(idx < compressed_data.inner_idx[index1 + 1]){
@@ -160,7 +225,7 @@ namespace algebra{
                  * @return The value of the matrix in the position (index1, index2)
                 */
 
-            std::cout << "Operator() const" << std::endl;
+                DEBUG_MSG("Operator() const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed())
                         if(data.find({index1, index2}) == data.cend())

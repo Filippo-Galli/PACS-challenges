@@ -2,8 +2,8 @@
 CXX = g++
 
 # Define compiler flags
-#CXXFLAGS = -Wall -Wextra -std=c++20
-CXXFLAGS = -std=c++20
+CXXFLAGS = -Wall -Wextra -std=c++20
+DEBUG_CXXFLAGS = -DDEBUG
 
 # Define the number of threads to use for the build
 MAKEFLAGS += -j2
@@ -39,3 +39,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # Define the rule to clean up the build artifacts
 clean:
 	rm -f $(OBJ_DIR)/*.o $(TARGET)
+
+# Define the rule to build the target in debug mode
+debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
+debug: $(TARGET)

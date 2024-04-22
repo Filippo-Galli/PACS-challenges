@@ -1,0 +1,13 @@
+%%MatrixMarket matrix coordinate real general
+% This is a test matrix
+% Created on 04/22/2024
+%
+% This matrix represents a 3x3 sparse matrix
+% with 5 non-zero entries
+%
+3 3 5
+1 1 1.0
+2 2 2.0
+3 3 3.0
+1 2 4.0
+2 3 5.0

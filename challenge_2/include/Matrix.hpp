@@ -8,6 +8,10 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
+#include <numeric>
+#include <execution>
+#include <cmath>
+#include <algorithm>
 
 #ifdef DEBUG
 #define DEBUG_MSG(msg) std::cout << msg << std::endl;
@@ -15,11 +19,19 @@
 #define DEBUG_MSG(msg)
 #endif
 
+// TODO: check it works for complex numbers also
+
 namespace algebra{
 
     enum StorageOrder{
         RowMajor,
         ColumnMajor
+    };
+
+    enum norm_type{
+        One,
+        Infinity,
+        Frobenius,
     };
 
     template <typename T>
@@ -94,7 +106,6 @@ namespace algebra{
                     else
                         data[{col - 1, row - 1}] = value;
                 }
-                //std::endl(std::cout);
 
                 file.close();
 
@@ -106,7 +117,7 @@ namespace algebra{
             template <typename U, StorageOrder Order_op>
             friend std::vector<U> operator*(Matrix<U, Order_op> & m, const std::vector<U> & v);
             
-            Matrix(const size_t & idx1, const size_t & idx2){
+            Matrix(const size_t & idx1, const size_t & idx2) noexcept{
                 
                 /**
                  * @brief Constructor for the Matrix class
@@ -137,15 +148,13 @@ namespace algebra{
                 read_matrix_MM(filename);
             }
 
-            void print() const{
+            void print() const noexcept{
                  /**
                  * @brief Print the matrix
                  * @note This function will print the matrix in the console
                 */
 
-                // TODO: adding the possibility to save to a file
                 if(compressed){
-
                     std::cout << "Inner indexes: " << std::endl;
                     for(const auto & idx : compressed_data.inner_idx)
                         std::cout << idx << " ";
@@ -158,9 +167,8 @@ namespace algebra{
 
                     std::cout << "Data: " << std::endl;
                     for(const auto & idx : compressed_data.data)
-                        std::cout << idx << " ";
+                        std::cout << idx << " " << std::endl;
                     std::cout << std::endl;
-
                 }
                 else{
                     for(size_t i = 0; i < rows; i++){
@@ -191,7 +199,7 @@ namespace algebra{
                  * @return The value of the matrix in the position (index1, index2)
                 */
 
-                DEBUG_MSG("Operator() non-const");
+                //DEBUG_MSG("Operator() non-const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed()){
                         if(data.find({index1, index2}) == data.end())
@@ -225,7 +233,7 @@ namespace algebra{
                  * @return The value of the matrix in the position (index1, index2)
                 */
 
-                DEBUG_MSG("Operator() const");
+                //DEBUG_MSG("Operator() const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed())
                         if(data.find({index1, index2}) == data.cend())
@@ -247,7 +255,7 @@ namespace algebra{
                 }
             }
 
-            void compress(){
+            void compress() noexcept{
                 /**
                  * @brief Compress the matrix
                  * @note This function will compress the matrix in a CompressedMatrix struct using Compressed Sparse Row (CSR) format 
@@ -266,19 +274,19 @@ namespace algebra{
                 compressed_data.outer_idx.reserve(data.size());
                 compressed_data.data.reserve(data.size());
 
+                // temporary object to store the number of elements in each row
+                auto temp(compressed_data.inner_idx);
+
+                // fill the compressed matrix struct
                 for(auto it = data.begin(); it != data.end(); it++){
-                    ++compressed_data.inner_idx[it->first[0] + 1]; // add 1 to the inner index for each element in that row
+                    ++temp[it->first[0] + 1]; // add 1 to the inner index for each element in that row
                     
-                    compressed_data.outer_idx.push_back(it->first[1]);
-                    compressed_data.data.push_back(it->second);
+                    compressed_data.outer_idx.emplace_back(it->first[1]);
+                    compressed_data.data.emplace_back(it->second);
                 }
 
                 // Calculate the cumulative sum so if some line is empty, the inner_idx will be correct
-                int temp_sum = 0;
-                for(auto & idx : compressed_data.inner_idx){
-                    temp_sum += idx;
-                    idx = temp_sum;
-                }
+                std::partial_sum(temp.begin(), temp.end(), compressed_data.inner_idx.begin());
                 
                 // Set internal state
                 compressed = true;
@@ -287,7 +295,7 @@ namespace algebra{
                 data.clear();
             }
 
-            void uncompress(){
+            void uncompress() noexcept{
                 /**
                  * @brief Uncompress the matrix
                  * @note This function will uncompress the matrix from a CompressedMatrix struct using Compressed Sparse Row (CSR) format 
@@ -316,8 +324,7 @@ namespace algebra{
                 compressed_data.data.clear();
             }
 
-
-            void resize(const size_t & idx1, const size_t & idx2){
+            void resize(const size_t & idx1, const size_t & idx2) noexcept{
                 /**
                  * @brief Resize the matrix
                  * @note This function will resize the matrix
@@ -347,11 +354,90 @@ namespace algebra{
                 }
 
             }
-                
+            
+            template <norm_type Norm>
+            double norm() const{
+                /**
+                 * @brief Calculate the norm of the matrix
+                 * @note This function will calculate the norm of the matrix
+                 * @return The norm of the matrix
+                */
+                if constexpr(Norm == norm_type::One){
+                    T max = 0;
+                    if(!is_compressed()){
+                        for(size_t c = 0; c < cols; c++){
+                            T sum = 0; // temporary variable to store the sum of the elements of each row
+                            for(size_t r = 0; r < rows; r++){
+                                if constexpr(Order == StorageOrder::RowMajor)
+                                    sum += std::abs((*this)(r, c));
+                                else
+                                    sum += std::abs((*this)(c, r));
+                            }
+
+                            if(sum > max)
+                                max = sum;
+                        }
+                    }
+                    else{
+                        //TODO: implement the compressed version
+                    }
+
+                    return max;
+                }
+                else if constexpr(Norm == norm_type::Infinity){
+                    T max = 0;
+                    if(!is_compressed()){
+                        for(size_t r = 0; r < rows; r++){
+                            T sum = 0; // temporary variable to store the sum of the elements of each row
+                            for(size_t c = 0; c < cols; c++){
+                                if constexpr(Order == StorageOrder::RowMajor)
+                                    sum += std::abs((*this)(r, c));
+                                else
+                                    sum += std::abs((*this)(c, r));
+                            }
+
+                            if(sum > max)
+                                max = sum;
+                        }
+                    }
+                    else{
+                        //TODO: implement the compressed version
+                    }
+
+                    return max;
+                }
+                else if constexpr(Norm == norm_type::Frobenius){
+                    double sum = 0;
+                    if(!is_compressed()){
+                        for(size_t r = 0; r < rows; r++){
+                            for(size_t c = 0; c < cols; c++){
+                                if constexpr(Order == StorageOrder::RowMajor)
+                                    sum += (*this)(r, c) * (*this)(r, c);
+                                else
+                                    sum += (*this)(c, r) * (*this)(c, r);
+                            }
+                        }
+                    }
+                    else{
+                        // temporary object to store the squared absolute values
+                        auto temp(compressed_data.data);
+
+                        // Transform the vector to hold the squared absolute values
+                        std::transform(temp.begin(), temp.end(), temp.begin(), [](T val) { return std::abs(val) * std::abs(val); });
+
+                        // Sum the elements of the vector
+                        sum = std::accumulate(temp.begin(), temp.end(), 0.0);
+                    }
+                    return std::sqrt(sum);
+                }
+
+                throw std::invalid_argument("[norm] Invalid norm type");
+            } 
+
             // Getter
-            size_t get_rows() const { return rows; }
-            size_t get_cols() const { return cols; }
-            bool is_compressed() const { return compressed; }
+            size_t get_rows() const noexcept { return rows; }
+            size_t get_cols() const noexcept{ return cols; }
+            bool is_compressed() const noexcept { return compressed; }
 
     };
 
@@ -384,8 +470,9 @@ namespace algebra{
        }
 
        if(!m.is_compressed()){
-            for(size_t i = 0; i < m.get_rows(); i++){
-                for(size_t j = 0; j < m.get_cols(); j++){
+            size_t temp_rows = m.get_rows(), temp_cols = m.get_cols();
+            for(size_t i = 0; i < temp_rows; i++){
+                for(size_t j = 0; j < temp_cols; j++){
                     if constexpr(Order == StorageOrder::RowMajor)
                         result[i] += m(i, j) * v[j];
                     else
@@ -396,11 +483,27 @@ namespace algebra{
             return result;
        }
        else{
+
+            // TODO: test which one is faster
+            /*
             for(size_t i = 0; i < m.compressed_data.inner_idx.size() - 1; i++){
                 for(size_t j = m.compressed_data.inner_idx[i]; j < m.compressed_data.inner_idx[i + 1]; j++){
                     result[i] += m.compressed_data.data[j] * v[m.compressed_data.outer_idx[j]];
                 }
+            }*/
+
+            
+            for(size_t i = 0; i < m.compressed_data.inner_idx.size() - 1; i++){
+                std::vector<T> temp(m.compressed_data.inner_idx[i + 1] - m.compressed_data.inner_idx[i], 0);
+                
+                transform(m.compressed_data.data.begin() + m.compressed_data.inner_idx[i], 
+                m.compressed_data.data.begin() + m.compressed_data.inner_idx[i + 1], 
+                v.begin() + m.compressed_data.outer_idx[m.compressed_data.inner_idx[i]], 
+                temp.begin(), std::multiplies<T>());
+
+                result[i] = std::reduce(std::execution::par,temp.begin(), temp.end(), 0);
             }
+            
        }  
        return result;
     }

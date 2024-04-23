@@ -1,70 +1,57 @@
 #include "Matrix.hpp"
 
-int main(int argc, char *argv[]){
-    /*
-    algebra::Matrix<int, algebra::StorageOrder::RowMajor> m(4,6);
+#include <chrono>
 
-    // Fill the matrix
-    m(0, 0) = 10;
-    m(0, 1) = 20;
-    m(1, 1) = 30;
-    m(1, 3) = 40;
-    m(2, 2) = 50;
-    m(2, 3) = 60;
-    m(2, 4) = 70;
-    m(3, 5) = 80;
-
+void time_test(auto & m){
     // Print starting matrix
-    std::cout << std::endl;
-    m.print();
-    std::cout << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
 
-    // test compress
-    m.compress();
+    std::vector<double> v(m.get_cols(), 1);
+    std::vector<double> result = m * v;
 
-    std::cout << std::endl;
-    m.print();
-    std::cout << std::endl;
-    
-    // test uncompress
-    m.uncompress();
+    // Print resulting matrix
+    /*
+    for(auto & i : result){
+        std::cout << i << std::endl;
+    }
+    */
 
-    std::cout << std::endl;
-    m.print();
-    std::cout << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::string placeholder = m.is_compressed() ? "Compressed: " : "Uncompressed: ";
+    std::cout << placeholder << duration.count() << " ms" << std::endl;
+}
 
-    // test resize
-    m.resize(3, 4);
+int main(int argc, char *argv[]){
 
-    std::cout << std::endl;
-    m.print();
-    std::cout << std::endl;
-
-    // test operator*
-    std::vector<int> v = {1, 1, 1, 1};
-    std::vector<int> result = m * v;
-
-    std::cout << "Result of the matrix-vector multiplication: ";
-    for(auto & elem : result){
-        std::cout << elem << ' ';
+    if(argc == 1){
+        std::cout << "Usage: ./main <filename>" << std::endl;
+        return 1;
+    }
+    else if(argc > 2){
+        std::cout << "Too many arguments" << std::endl;
+        return 1;
     }
 
-    std::cout << std::endl << m(1, 1)<<std::endl;
-    */
-   if(argc == 1){
-       std::cout << "Usage: ./main <filename>" << std::endl;
-       return 1;
-   }
-   else if(argc > 2){
-       std::cout << "Too many arguments" << std::endl;
-       return 1;
-   }
+    std::string filename = argv[1];
 
-   std::string filename = argv[1];
+    algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
+    
+    time_test(m);
 
-    algebra::Matrix<double, algebra::StorageOrder::ColumnMajor> m(filename);
+    
+    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
+    
 
-    m.print();
+    m.compress();
 
+    time_test(m);
+    
+    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
+    
     return 0;
 }

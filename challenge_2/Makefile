@@ -43,3 +43,7 @@ clean:
 # Define the rule to build the target in debug mode
 debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
 debug: $(TARGET)
+
+# Define rule to optimize the build
+optimize: CXXFLAGS += -O3
+optimize: $(TARGET)

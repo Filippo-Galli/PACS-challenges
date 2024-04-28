@@ -4,9 +4,11 @@
 
 void time_test(auto & m){
     // Print starting matrix
-    auto start = std::chrono::high_resolution_clock::now();
 
     std::vector<double> v(m.get_cols(), 1);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::vector<double> result = m * v;
 
     // Print resulting matrix
@@ -19,7 +21,7 @@ void time_test(auto & m){
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::string placeholder = m.is_compressed() ? "Compressed: " : "Uncompressed: ";
-    std::cout << placeholder << duration.count() << " ms" << std::endl;
+    std::cout << placeholder << duration.count() << " mus" << std::endl;
 }
 
 int main(int argc, char *argv[]){
@@ -40,18 +42,18 @@ int main(int argc, char *argv[]){
     time_test(m);
 
     
-    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
+    //std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    //std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    //std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
     
 
     m.compress();
 
     time_test(m);
     
-    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
+    //std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    //std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    //std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
     
     return 0;
 }

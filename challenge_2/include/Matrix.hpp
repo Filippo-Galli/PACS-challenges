@@ -62,7 +62,7 @@ namespace algebra{
                 if constexpr(Order == StorageOrder::RowMajor)
                     return index1 < rows && index2 < cols;
                 else
-                    return index1 < cols && index2 < rows;    
+                    return index1 < cols && index2 < rows;
             }
 
             void read_matrix_MM(const std::string & filename){
@@ -72,11 +72,11 @@ namespace algebra{
                  * @param filename The name of the file
                 */
 
-                // check if the file is valid
-                struct stat buffer;   
+                // check if the filename is valid
+                struct stat buffer;
                 if(stat(filename.c_str(), &buffer) == -1){
                     throw std::runtime_error("file not found");
-                } 
+                }
 
                 std::ifstream file(filename);
                 int nonzeros = 0;
@@ -84,8 +84,7 @@ namespace algebra{
                 // skip comments + read the number of rows, columns and nonzeros
                 std::string line;
                 bool exit = false;
-                
-                // TODO: try to improve it, use 1 between getline and istringstream
+
                 while (!exit)
                 {
                     getline(file, line);
@@ -118,15 +117,14 @@ namespace algebra{
             friend std::vector<U> operator*(Matrix<U, Order_op> & m, const std::vector<U> & v);
             
             Matrix(const size_t & idx1, const size_t & idx2) noexcept{
-                
                 /**
                  * @brief Constructor for the Matrix class
                  * @note This constructor will ask the user for the number of rows and columns of the matrix
                  * and then will ask for the values of the matrix
                  * @param idx1 The number of index 1 [if row major, it is the number of rows, if column major, it is the number of columns]
                  * @param idx2 The number of index 2
-                 * 
                 */
+
                 if constexpr(Order == StorageOrder::RowMajor){
                     this->rows = idx1;
                     this->cols = idx2;
@@ -155,6 +153,9 @@ namespace algebra{
                 */
 
                 if(compressed){
+                    std::string placeholder = Order == StorageOrder::RowMajor ? "Row Major" : "Column Major";
+                    std::cout << placeholder << std::endl;
+
                     std::cout << "Inner indexes: " << std::endl;
                     for(const auto & idx : compressed_data.inner_idx)
                         std::cout << idx << " ";
@@ -171,20 +172,13 @@ namespace algebra{
                     std::cout << std::endl;
                 }
                 else{
-                    for(size_t i = 0; i < rows; i++){
-                        for(size_t j = 0; j < cols; j++){
-                            if constexpr(Order == StorageOrder::RowMajor)
-                                if( data.find({i, j}) != data.cend())
-                                    std::cout << data.at({i, j}) << " ";
-                                else  
-                                    std::cout << "0 ";
-                            else
-                                if( data.find({j, i}) != data.cend() )
-                                    std::cout << data.at({j, i}) << " ";
-                                else  
-                                    std::cout << "0 ";
-                        }
-                        std::cout << std::endl;
+                    // print guidelines on how I print the matrix
+                    std::string placeholder1 = Order == StorageOrder::RowMajor ? "Row" : "Column";
+                    std::string placeholder2 = Order == StorageOrder::RowMajor ? "Column" : "Row";
+                    std::cout << placeholder1 << " " << placeholder2 << " " << " Data " << std::endl;
+                    std::cout << "----------------------" << std::endl;
+                    for(auto && pair: data){
+                        std::cout << pair.first[0] << " " << pair.first[1] << " " << pair.second << std::endl;
                     }
                 }
 
@@ -202,6 +196,7 @@ namespace algebra{
                 //DEBUG_MSG("Operator() non-const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed()){
+                        // if the element is not in the map, add it
                         if(data.find({index1, index2}) == data.end())
                             data[{index1, index2}] = 0;
                 
@@ -217,11 +212,12 @@ namespace algebra{
 
                             ++idx;
                         }
+
+                        throw std::out_of_range("[operator()] Attempt to add value while the matrix is compressed");
                     }
                 }
                 
-                throw std::out_of_range("[operator()]Invalid indexes");
-            
+                throw std::out_of_range("[operator()] Invalid indexes");
             }
 
             T operator()(const size_t & index1, const size_t & index2) const{
@@ -236,6 +232,7 @@ namespace algebra{
                 //DEBUG_MSG("Operator() const");
                 if(check_indexes(index1, index2)){
                     if(!is_compressed())
+                        // if the element is not in the map, return 0
                         if(data.find({index1, index2}) == data.cend())
                             return 0;
                         else
@@ -280,7 +277,6 @@ namespace algebra{
                 // fill the compressed matrix struct
                 for(auto it = data.begin(); it != data.end(); it++){
                     ++temp[it->first[0] + 1]; // add 1 to the inner index for each element in that row
-                    
                     compressed_data.outer_idx.emplace_back(it->first[1]);
                     compressed_data.data.emplace_back(it->second);
                 }
@@ -304,8 +300,6 @@ namespace algebra{
 
                 if(!compressed)
                     return;
-
-                data.clear();
 
                 size_t idx = 0;
                 for(size_t i = 0; i < compressed_data.inner_idx.size() -1; i++){
@@ -339,13 +333,15 @@ namespace algebra{
                     cols = idx1;
                     rows = idx2;
                 }
-
+                
+                // Check if the matrix is compressed and uncompress it
                 if(is_compressed())
                     uncompress();
 
                 std::cout << std::endl << "[INFO] Matrix resized to " << rows << "x" << cols << std::endl;
 
                 for(auto temp = data.begin(); temp != data.end();){
+                    // check if the indexes are valid with new dimensions
                     if(check_indexes(temp->first[0], temp->first[1]) == false){
                         temp = data.erase(temp);
                     } else {
@@ -363,7 +359,7 @@ namespace algebra{
                  * @return The norm of the matrix
                 */
                 if constexpr(Norm == norm_type::One){
-                    T max = 0;
+                    double max = 0;
                     if(!is_compressed()){
                         for(size_t c = 0; c < cols; c++){
                             T sum = 0; // temporary variable to store the sum of the elements of each row
@@ -379,7 +375,30 @@ namespace algebra{
                         }
                     }
                     else{
-                        //TODO: implement the compressed version
+                        // TODO: improve version for RowMajor 
+                        if constexpr (Order == StorageOrder::RowMajor){
+                            for(size_t i = 0; i < cols; i++){
+                                T sum = 0;
+                                //search inside the outer index array if we reach the correct column
+                                for(size_t j = 0; j < compressed_data.outer_idx.size(); j++){
+                                    if(compressed_data.outer_idx[j] == i)
+                                        sum += std::abs(compressed_data.data[j]);
+                                }
+                                if(sum > max)
+                                    max = sum;
+                            }
+                        }
+                        else{
+                            for(size_t i = 0; i < cols; i++){
+                                T sum = 0;
+                                for(size_t j = compressed_data.inner_idx[i]; j < compressed_data.inner_idx[i + 1]; j++){
+                                    sum += std::abs(compressed_data.data[j]);
+                                }
+                                
+                                if(sum > max)
+                                    max = sum;
+                            }
+                        }
                     }
 
                     return max;
@@ -401,7 +420,29 @@ namespace algebra{
                         }
                     }
                     else{
-                        //TODO: implement the compressed version
+                        if constexpr (Order == StorageOrder::RowMajor){
+                            for(size_t i = 0; i < rows; i++){
+                                T sum = 0;
+                                for(size_t j = compressed_data.inner_idx[i]; j < compressed_data.inner_idx[i + 1]; j++){
+                                    sum += std::abs(compressed_data.data[j]);
+                                }
+                                if(sum > max)
+                                    max = sum;
+                            }
+                        }
+                        // TODO: improve version for ColumnMajor
+                        else{
+                            for(size_t i = 0; i < rows; i++){
+                                T sum = 0;
+                                // search inside the outer index array if we reach the correct row
+                                for(size_t j = 0; j < compressed_data.outer_idx.size(); j++){
+                                  if(compressed_data.outer_idx[j] == i)
+                                    sum += std::abs(compressed_data.data[j]);
+                                }
+                                if(sum > max)
+                                    max = sum;
+                            }
+                        }
                     }
 
                     return max;
@@ -483,27 +524,21 @@ namespace algebra{
             return result;
        }
        else{
-
-            // TODO: test which one is faster
-            /*
+            std::vector<T> temp;
             for(size_t i = 0; i < m.compressed_data.inner_idx.size() - 1; i++){
-                for(size_t j = m.compressed_data.inner_idx[i]; j < m.compressed_data.inner_idx[i + 1]; j++){
-                    result[i] += m.compressed_data.data[j] * v[m.compressed_data.outer_idx[j]];
-                }
-            }*/
-
-            
-            for(size_t i = 0; i < m.compressed_data.inner_idx.size() - 1; i++){
-                std::vector<T> temp(m.compressed_data.inner_idx[i + 1] - m.compressed_data.inner_idx[i], 0);
+                temp.resize(m.compressed_data.inner_idx[i + 1] - m.compressed_data.inner_idx[i]);
                 
-                transform(m.compressed_data.data.begin() + m.compressed_data.inner_idx[i], 
-                m.compressed_data.data.begin() + m.compressed_data.inner_idx[i + 1], 
-                v.begin() + m.compressed_data.outer_idx[m.compressed_data.inner_idx[i]], 
-                temp.begin(), std::multiplies<T>());
+                // multiply the values of the compressed matrix with the values of the vector
+                
+                for(size_t j = m.compressed_data.inner_idx[i]; j < m.compressed_data.inner_idx[i + 1]; j++){
+                    temp[i] = m.compressed_data.data[j] * v[m.compressed_data.outer_idx[j]];
+                }
+                
+                //std::transform(std::execution::par, m.compressed_data.data.begin() + m.compressed_data.inner_idx[i], m.compressed_data.data.begin() + m.compressed_data.inner_idx[i + 1], temp.begin(), [&v, &m, i](T val) { return val * v[m.compressed_data.outer_idx[i]]; });
 
-                result[i] = std::reduce(std::execution::par,temp.begin(), temp.end(), 0);
+                // sum the values of the temp vector
+                result[i] = std::reduce(std::execution::par, temp.begin(), temp.end(), 0);
             }
-            
        }  
        return result;
     }

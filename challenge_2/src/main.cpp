@@ -3,23 +3,16 @@
 #include <chrono>
 
 void time_test(auto & m){
-    // Print starting matrix
-
     std::vector<double> v(m.get_cols(), 1);
 
     auto start = std::chrono::high_resolution_clock::now();
 
     std::vector<double> result = m * v;
 
-    // Print resulting matrix
-    /*
-    for(auto & i : result){
-        std::cout << i << std::endl;
-    }
-    */
-
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    
+    // printing the time
     std::string placeholder = m.is_compressed() ? "Compressed: " : "Uncompressed: ";
     std::cout << placeholder << duration.count() << " mus" << std::endl;
 }
@@ -37,23 +30,23 @@ int main(int argc, char *argv[]){
 
     std::string filename = argv[1];
 
-    algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
-    
+    algebra::Matrix<double, algebra::StorageOrder::ColumnMajor> m(filename);
+    //algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
+ 
     time_test(m);
 
     
-    //std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    //std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    //std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
-    
+    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
 
     m.compress();
 
     time_test(m);
     
-    //std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    //std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    //std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
+    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
     
     return 0;
 }

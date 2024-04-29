@@ -19,8 +19,6 @@
 #define DEBUG_MSG(msg)
 #endif
 
-// TODO: check it works for complex numbers also
-
 namespace algebra{
 
     enum StorageOrder{
@@ -524,16 +522,15 @@ namespace algebra{
             return result;
        }
        else{
+            // TODO:  improve perfomance, if possible reach target of <20mus
             std::vector<T> temp;
             for(size_t i = 0; i < m.compressed_data.inner_idx.size() - 1; i++){
                 temp.resize(m.compressed_data.inner_idx[i + 1] - m.compressed_data.inner_idx[i]);
                 
-                // multiply the values of the compressed matrix with the values of the vector
-                
+                // multiply the values of the compressed matrix with the values of the vector 
                 for(size_t j = m.compressed_data.inner_idx[i]; j < m.compressed_data.inner_idx[i + 1]; j++){
                     temp[i] = m.compressed_data.data[j] * v[m.compressed_data.outer_idx[j]];
                 }
-                
                 //std::transform(std::execution::par, m.compressed_data.data.begin() + m.compressed_data.inner_idx[i], m.compressed_data.data.begin() + m.compressed_data.inner_idx[i + 1], temp.begin(), [&v, &m, i](T val) { return val * v[m.compressed_data.outer_idx[i]]; });
 
                 // sum the values of the temp vector

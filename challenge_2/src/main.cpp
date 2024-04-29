@@ -17,6 +17,33 @@ void time_test(auto & m){
     std::cout << placeholder << duration.count() << " mus" << std::endl;
 }
 
+void norm_test(auto & m){
+    /**
+     * @brief function to test the norm of the matrix
+     * @note the function will print the norm of the matrix in different norms and then compress/uncompress the matrix and print the norm again
+     * @param m the matrix to test
+    */
+
+    std::string placeholder = m.is_compressed() ? "Compressed: " : "Uncompressed: ";
+    std::cout << std::endl <<"Norm test"<< std::endl << placeholder << std::endl;
+    std::cout << "Norm - One: " << m.template norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.template norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.template norm<algebra::norm_type::Frobenius>() << std::endl;
+
+    if(m.is_compressed()){
+      m.uncompress();
+    }
+    else{
+      m.compress();
+    }
+
+    placeholder = m.is_compressed() ? "Compressed: " : "Uncompressed: ";
+    std::cout << std::endl << placeholder << std::endl;
+    std::cout << "Norm - One: " << m.template norm<algebra::norm_type::One>() << std::endl;
+    std::cout << "Norm - Infinity: " << m.template norm<algebra::norm_type::Infinity>() << std::endl;
+    std::cout << "Norm - Frobenius: " << m.template norm<algebra::norm_type::Frobenius>() << std::endl;
+}
+
 int main(int argc, char *argv[]){
 
     if(argc == 1){
@@ -35,18 +62,11 @@ int main(int argc, char *argv[]){
  
     time_test(m);
 
-    
-    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
-
     m.compress();
 
     time_test(m);
-    
-    std::cout << "Norm - One: " << m.norm<algebra::norm_type::One>() << std::endl;
-    std::cout << "Norm - Infinity: " << m.norm<algebra::norm_type::Infinity>() << std::endl;
-    std::cout << "Norm - Frobenius: " << m.norm<algebra::norm_type::Frobenius>() << std::endl;
-    
+
+    norm_test(m);
+
     return 0;
 }

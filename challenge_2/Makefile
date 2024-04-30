@@ -45,5 +45,5 @@ debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
 debug: $(TARGET)
 
 # Define rule to optimize the build
-optimize: CXXFLAGS += -O3
+optimize: CXXFLAGS += -O3 -march=native -fomit-frame-pointer -mtune=native -flto
 optimize: $(TARGET)

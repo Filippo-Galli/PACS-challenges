@@ -30,7 +30,13 @@ I repeated the test 10 times using the following command:
 ```Bash
 seq 10 | xargs -Iz ./main test/lnsp_131.mtx  
 ```
-and I took the average of the time (in **microseconds**) spent by the program to execute the matrix-vector moltiplication:
+All test were executed on a laptop with the following characteristics:
+- Model: 82UT Yoga Slim 7 Pro 14IAH7
+- OS: Arch Linux x86_64
+- CPU: 12th Gen Intel i7-12700H
+- RAM: 16GB
+
+I took the average of the time (in **microseconds**) spent by the program to execute the matrix-vector moltiplication:
 
 | Test | Compressed | Decompressed |
 |:----:|:--------:|:----------:|
@@ -51,11 +57,27 @@ The average time spent in matrix-vector multiplication is:
 | compressed | 20,7 |
 | uncompressed| 9512 |
 
-All test were executed on a laptop with the following characteristics:
-- Model: 82UT Yoga Slim 7 Pro 14IAH7
-- OS: Arch Linux x86_64
-- CPU: 12th Gen Intel i7-12700H
-- RAM: 16GB
+## Without dimension check
+Without the dimension check the average time spent in matrix-vector multiplication is:
+
+| Test | Compressed | Decompressed |
+|:----:|:--------:|:----------:|
+| 1    |  14 |  5684  |
+| 2    |  12 |  4523  |
+| 3    |  13 |  4744  |
+| 4    |  11 |  3912  |
+| 5    |  11 |  3798 |
+| 6    |  11 |  3913  |
+| 7    |  15 |  4220  |
+| 8    |  13 |  3954  |
+| 9    |  15 |  5174 |
+| 10   |  9 |  3960  |
+
+The average time spent in matrix-vector multiplication is:
+|matrix mode| mean time (microseconds)| % of improvement |
+|:----:|:----:|:----:|
+| compressed | 12,4 | -40,1% |
+| uncompressed| 4388 | -53,87% |
 
 # Side notes
 ### TODOs

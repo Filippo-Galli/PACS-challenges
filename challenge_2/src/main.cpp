@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
     std::string filename = argv[1];
 
     algebra::Matrix<double, algebra::StorageOrder::ColumnMajor> m(filename);
-    //algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
+   // algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
  
     time_test(m);
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
 
     time_test(m);
 
-    norm_test(m);
+    //norm_test(m);
 
     return 0;
 }

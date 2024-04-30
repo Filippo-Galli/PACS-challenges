@@ -61,9 +61,6 @@ All test were executed on a laptop with the following characteristics:
 ### TODOs
 It may happen that there are comments in the code that begin with “TODO:”. It is a reminder for me to implement some features or to fix some bugs.
 
-### MatrixMarket format
-I used the MatrixMarket format to store the matrix. It is a simple format to store sparse matrices. The format is described [here](https://math.nist.gov/MatrixMarket/formats.html). My choice is that the index in the file aren't fixed. If my matrix is defined row-wise, the first index is the row while the second one is the column. If the matrix is defined column-wise, the first index is the column while the second one is the row. 
-
 ### Test_matrix.mtx
 Very small matrix to see if the function *read_matrix_MM* read correctly the matrix. 
 

@@ -23,12 +23,12 @@ void time_test(auto &m)
   std::cout << "[Matrix-Vector] " <<placeholder << duration.count() << " mus" << std::endl;
 
   // printing the result
-  std::cout << "Result: ";
-  for (size_t i = 0; i < result.size(); i++)
-  {
-    std::cout << result[i] << " ";
-  }
-  std::endl(std::cout);
+  //std::cout << "Result: ";
+  //for (size_t i = 0; i < result.size(); i++)
+  //{
+  //  std::cout << result[i] << " ";
+  //}
+  //std::endl(std::cout);
 }
 
 void prod_matrix_matrix(auto &m)
@@ -40,12 +40,16 @@ void prod_matrix_matrix(auto &m)
    */
 
   //algebra::Matrix<double, algebra::StorageOrder::ColumnMajor>m2(1, m.get_cols());
-  algebra::Matrix<double, algebra::StorageOrder::RowMajor> m2(m.get_cols(), 1);
+  algebra::Matrix<double, algebra::StorageOrder::RowMajor> m2(m.get_cols(), 2);
   for(size_t i = 0; i < m.get_cols(); i++){
-    if(m2.get_order() == algebra::StorageOrder::RowMajor)
+    if(m2.get_order() == algebra::StorageOrder::RowMajor){
       m2(i, 0) = 1;
-    else
+      m2(i, 1) = 1;
+    }
+    else{
       m2(0, i) = 1;
+      m2(1, i) = 1;
+    } 
   }
 
 
@@ -61,8 +65,8 @@ void prod_matrix_matrix(auto &m)
   std::cout << "[Matrix-Matrix] "<< placeholder << duration.count() << " mus" << std::endl;
 
   // printing the result
-  std::cout << "Result: " << std::endl;
-  m_temp.print();
+  //std::cout << "Result: " << std::endl;
+  //m_temp.print();
 }
 
 void norm_test(auto &m)
@@ -125,7 +129,7 @@ int main(int argc, char *argv[])
   time_test(m);
   prod_matrix_matrix(m);
 
-  // norm_test(m);
+  norm_test(m);
 
   return 0;
 }

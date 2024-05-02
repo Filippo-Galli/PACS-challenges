@@ -645,8 +645,8 @@ namespace algebra
         resultMatrix.resize(m1.get_rows(), m2.get_cols());
 
         // TODO: refactor this code and improve it
-        if (m2.get_cols() == 1)
-        {
+        //if (m2.get_cols() == 1)
+        for (size_t c = 0; c < m2.get_cols(); ++c){
             std::vector<T> result(m1.get_rows(), 0);
 
             // temporary vector to store values of the column
@@ -655,9 +655,9 @@ namespace algebra
             for (size_t i = 0; i < temp.size(); ++i)
             {
                 if constexpr (OrderM2 == StorageOrder::RowMajor)
-                    temp[i] = m2(i, 0);
+                    temp[i] = m2(i, c);
                 else
-                    temp[i] = m2(0, i);
+                    temp[i] = m2(c, i);
             }
 
             // trust the operator*(Matrix, vector)
@@ -667,7 +667,7 @@ namespace algebra
             for (size_t i = 0; i < result.size(); ++i)
             {
                 if (result[i] != 0)
-                    resultMatrix(i, 0) = result[i];
+                    resultMatrix(i, c) = result[i];
             }
         }
 

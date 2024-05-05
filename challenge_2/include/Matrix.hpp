@@ -186,8 +186,8 @@ namespace algebra
             }
             else
             {
-                // Short print
-                /*
+                // Short print - print only the non-zero elements 
+                
                 std::string placeholder1 = Order == StorageOrder::RowMajor ? "Row" : "Column";
                 std::string placeholder2 = Order == StorageOrder::RowMajor ? "Column" : "Row";
                 std::cout << placeholder1 << " " << placeholder2 << " " << " Data " << std::endl;
@@ -195,11 +195,9 @@ namespace algebra
                 for(auto && pair: data){
                     std::cout << pair.first[0] << '\t' << pair.first[1] << '\t' << pair.second << std::endl;
                 }
-                */
                 
-
-                // Long print
-                
+                // Long print - print all the matrix with also 0s
+                /*
                 for (size_t i = 0; i < rows; i++)
                 {
                     for (size_t j = 0; j < cols; j++)
@@ -211,7 +209,7 @@ namespace algebra
                     }
                     std::cout << std::endl;
                 }
-                
+                */                
             }
         }
 
@@ -225,7 +223,6 @@ namespace algebra
              * @return The value of the matrix in the position (index1, index2)
              */
 
-            // DEBUG_MSG("Operator() non-const");
             if (check_indexes(index1, index2))
             {
                 if (!is_compressed())
@@ -267,7 +264,6 @@ namespace algebra
              * @return The value of the matrix in the position (index1, index2)
              */
 
-            // DEBUG_MSG("Operator() const");
             if (check_indexes(index1, index2))
             {
                 if (!is_compressed())
@@ -572,20 +568,9 @@ namespace algebra
 
         // Error handling of wrong dimensions
         /*
-         if constexpr(Order == StorageOrder::RowMajor){
-              if(m.get_cols() != v.size()){
-                  throw std::invalid_argument("[Operator*] The number of columns of the matrix must be equal to the size of the vector");
-              }
-
-              result.resize(m.get_rows(), 0);
-         }
-         else{
-              if(m.get_rows() != v.size()){
-                  throw std::invalid_argument("[Operator*] The number of columns of the matrix must be equal to the size of the vector");
-              }
-
-              result.resize(m.get_cols(), 0);
-         }
+        if(m.get_cols() != v.size()){
+            throw std::invalid_argument("[Operator*] The number of columns of the matrix must be equal to the size of the vector");
+        }
         */
 
         if (!m.is_compressed())
@@ -595,14 +580,15 @@ namespace algebra
             {
                 for (size_t j = 0; j < temp_cols; j++)
                 {
-                    if constexpr (Order == StorageOrder::RowMajor)
-                        result[i] += m(i, j) * v[j];
+                    if constexpr (Order == StorageOrder::RowMajor){
+                        if(m.data.find({i, j}) != m.data.end()) // O(log(data non-zeros))
+                            result[i] += m.data[{i, j}] * v[j];
+                    }
                     else
-                        result[i] += m(j, i) * v[j];
+                        if(m.data.find({j, i}) != m.data.end())
+                            result[i] += m.data[{j, i}] * v[j];
                 }
             }
-
-            return result;
         }
         else
         {
@@ -620,8 +606,6 @@ namespace algebra
                    }
                }
            }
-
-            return result;
         }
         return result;
     }
@@ -645,7 +629,6 @@ namespace algebra
         resultMatrix.resize(m1.get_rows(), m2.get_cols());
 
         // TODO: refactor this code and improve it
-        //if (m2.get_cols() == 1)
         for (size_t c = 0; c < m2.get_cols(); ++c){
             std::vector<T> result(m1.get_rows(), 0);
 

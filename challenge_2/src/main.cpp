@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-void time_test(auto &m)
+void prod_matrix_vector(auto &m)
 {
   /**
    * @brief function to test the time taken by the product of a matrix with a vector
@@ -31,24 +31,27 @@ void time_test(auto &m)
   //std::endl(std::cout);
 }
 
-void prod_matrix_matrix(auto &m)
+void prod_matrix_matrix(auto &m, size_t n_cols = 2)
 {
   /**
    * @brief function to test the product of a matrix with another matrix
    * @note the function will print the result of the product and the time taken by the operation
    * @param m first matrix to multiply
+   * @param n_cols number of columns of the second matrix
    */
 
-  //algebra::Matrix<double, algebra::StorageOrder::ColumnMajor>m2(1, m.get_cols());
-  algebra::Matrix<double, algebra::StorageOrder::RowMajor> m2(m.get_cols(), 2);
+  //algebra::Matrix<double, algebra::StorageOrder::ColumnMajor>m2(n_cols, m.get_cols());
+  algebra::Matrix<double, algebra::StorageOrder::RowMajor> m2(m.get_cols(), n_cols);
   for(size_t i = 0; i < m.get_cols(); i++){
     if(m2.get_order() == algebra::StorageOrder::RowMajor){
-      m2(i, 0) = 1;
-      m2(i, 1) = 1;
+      for(size_t j = 0; j < n_cols; j++){
+        m2(i, j) = 1;
+      }
     }
     else{
-      m2(0, i) = 1;
-      m2(1, i) = 1;
+      for(size_t j = 0; j < n_cols; j++){
+        m2(j, i) = 1;
+      }
     } 
   }
 
@@ -85,12 +88,10 @@ void norm_test(auto &m)
   std::cout << "Norm - Infinity: " << m.template norm<algebra::norm_type::Infinity>() << std::endl;
   std::cout << "Norm - Frobenius: " << m.template norm<algebra::norm_type::Frobenius>() << std::endl;
 
-  if (m.is_compressed())
-  {
+  if (m.is_compressed()){
     m.uncompress();
   }
-  else
-  {
+  else{
     m.compress();
   }
 
@@ -121,15 +122,16 @@ int main(int argc, char *argv[])
   //algebra::Matrix<double, algebra::StorageOrder::ColumnMajor> m(filename);
   algebra::Matrix<double, algebra::StorageOrder::RowMajor> m(filename);
 
-  time_test(m);
+  prod_matrix_vector(m);
   prod_matrix_matrix(m);
 
   m.compress();
 
-  time_test(m);
+  prod_matrix_vector(m);
   prod_matrix_matrix(m);
 
-  norm_test(m);
+  //norm_test(m);
+
 
   return 0;
 }

@@ -40,50 +40,34 @@ I took the average of the time (in **microseconds**) spent by the program to exe
 
 | Test | Compressed | Decompressed |
 |:----:|:--------:|:----------:|
-| 1    |  20 |  8999  |
-| 2    |  22 |  14126  |
-| 3    |  23 |  9653  |
-| 4    |  21 |  10522  |
-| 5    |  17 |  8158 |
-| 6    |  19 |  9739  |
-| 7    |  26 |  8287  |
-| 8    |  17 |  8151  |
-| 9    |  22 |  8689 |
-| 10   |  20 |  8805  |
+| 1    |  1 |  299  |
+| 2    |  2 |  676  |
+| 3    |  2 |  646  |
+| 4    |  1 |  447  |
+| 5    |  1 |  589 |
+| 6    |  1 |  296  |
+| 7    |  1 |  299  |
+| 8    |  1 |  311  |
+| 9    |  2 |  698 |
+| 10   |  1 |  438  |
 
 The average time spent in matrix-vector multiplication is:
 |matrix mode| mean time (microseconds)|
 |:----:|:----:|
-| compressed | 20,7 |
-| uncompressed| 9512 |
-
-## Without dimension check
-Without the dimension check the average time spent in matrix-vector multiplication is:
-
-| Test | Compressed | Decompressed |
-|:----:|:--------:|:----------:|
-| 1    |  14 |  5684  |
-| 2    |  12 |  4523  |
-| 3    |  13 |  4744  |
-| 4    |  11 |  3912  |
-| 5    |  11 |  3798 |
-| 6    |  11 |  3913  |
-| 7    |  15 |  4220  |
-| 8    |  13 |  3954  |
-| 9    |  15 |  5174 |
-| 10   |  9 |  3960  |
-
-The average time spent in matrix-vector multiplication is:
-|matrix mode| mean time (microseconds)| % of improvement |
-|:----:|:----:|:----:|
-| compressed | 12,4 | -40,1% |
-| uncompressed| 4388 | -53,87% |
+| compressed | 1,3 |
+| uncompressed| 469,9 |
 
 # Side notes
 ### TODOs
 It may happen that there are comments in the code that begin with “TODO:”. It is a reminder for me to implement some features or to fix some bugs.
 
 ### Test_matrix.mtx
-Very small matrix to see if the function *read_matrix_MM* read correctly the matrix. 
+Very small matrix to see if the function *read_matrix_MM* and *operator** read correctly the matrix. 
 
+### Terms of multiplication
+To speed-up the development and debugging phase, the vector and the matrix for which I multiply are plenty of 1s. 
 
+# Further Improvements
+- Add the possibility to choose runtime if save as columnMajor or rowMajor the matrix; (It probably decrease perfomance)
+- Add the possibility to pass as parameter to main the vector\matrix to multiply;
+- save the resulting of that multiplication in Matrix Market Format 

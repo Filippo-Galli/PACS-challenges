@@ -7,6 +7,7 @@
 #include<functional>
 #include<cmath>
 #include<chrono>
+#include<muParser.h>
 
 struct Domain {
   double x0, x1, y0, y1;
@@ -21,14 +22,18 @@ class Mesh {
   double error = 0;
   int spacing = 10;
 
+  mu::Parser p;
+
   bool check(size_t i, size_t j) const;
 
+  double f(double x, double y, mu::Parser parser);
+
   public:
-  Mesh(const size_t & n, const Domain & domain_);
+  Mesh(const size_t & n, const Domain & domain_, const std::string & f);
 
   void print(); 
 
-  void update_seq(std::function<double(double, double)> f);
+  void update_seq();
 
   void update_error();
 

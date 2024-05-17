@@ -2,7 +2,7 @@
 CXX = g++
 
 # Define compiler flags
-CXXFLAGS = -Wall -Wextra -std=c++20 -fopenmp
+CXXFLAGS = -Wall -Wextra -std=c++20 -fopenmp -lmuparser
 DEBUG_CXXFLAGS = -DDEBUG
 
 # Define the number of threads to use for the build
@@ -45,5 +45,5 @@ debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
 debug: $(TARGET)
 
 # Define rule to optimize the build
-optimize: CXXFLAGS += -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-exceptions -fno-rtti
+optimize: CXXFLAGS += -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-rtti
 optimize: $(TARGET)

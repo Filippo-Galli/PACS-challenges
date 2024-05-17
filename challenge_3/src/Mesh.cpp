@@ -11,7 +11,32 @@ bool Mesh::check(size_t i, size_t j) const {
     return i < n && j < n;
 }
 
-Mesh::Mesh(const size_t & n, const Domain & domain_) : n(n), domain(domain_) {
+double Mesh::f(double x, double y, mu::Parser parser){
+  /**
+   * @brief Function to evaluate the function f
+   * @param x is the x coordinate
+   * @param y is the y coordinate
+   * @param p is the parser
+   * @return the value of the function f
+  */
+  parser.DefineVar("x", &x);
+  parser.DefineVar("y", &y);
+  return parser.Eval();
+}
+
+Mesh::Mesh(const size_t & n, const Domain & domain_, const std::string & f) : n(n), domain(domain_) {
+  // Creating possible constants
+  p.DefineConst("pi", std::numbers::pi);
+  p.DefineConst("e", std::numbers::e);
+
+  try{
+    p.SetExpr(f);
+  } 
+  catch (mu::Parser::exception_type &e) {
+    std::cerr << e.GetMsg() << std::endl;
+    exit(1);
+  }
+  
   h = (domain.x1 - domain.x0)/(n-1);
   for(size_t i = 0; i < n; ++i){
     mesh.insert(mesh.end(), n, 0.0);
@@ -103,7 +128,7 @@ void Mesh::print() {
     std::cout << std::endl;
 }
 
-void Mesh::update_seq(std::function<double(double, double)> f) {
+void Mesh::update_seq() {
     /**
      * @brief Function to update the mesh using the Jacobi method
      * @param f is the function to be solved
@@ -116,7 +141,7 @@ void Mesh::update_seq(std::function<double(double, double)> f) {
       for(size_t c = 1; c < n - 1; ++c) {
         // calculate + update value in the mesh
         auto coords = get_coordinates(r, c);
-        mesh[r*n + c] = 0.25*(mesh_old[(r-1)*n + c] + mesh_old[(r+1)*n + c] + mesh_old[r*n + (c-1)] + mesh_old[r*n + (c+1)] + h*h*f(coords.first, coords.second));
+        mesh[r*n + c] = 0.25*(mesh_old[(r-1)*n + c] + mesh_old[(r+1)*n + c] + mesh_old[r*n + (c-1)] + mesh_old[r*n + (c+1)] + h*h*f(coords.first, coords.second, p));
       }
     }
 

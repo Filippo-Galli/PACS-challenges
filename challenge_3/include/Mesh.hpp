@@ -8,6 +8,8 @@
 #include<cmath>
 #include<chrono>
 #include<muParser.h>
+#include<omp.h>
+//#include<mpi.h>
 
 struct Domain {
   double x0, x1, y0, y1;
@@ -34,8 +36,9 @@ class Mesh {
   void print(); 
 
   void update_seq();
+  void update_par(const int & n_tasks = 4);
 
-  void update_error();
+  void update_error(const int & n_tasks = 4);
 
   bool write(const std::string & filename) const;
 

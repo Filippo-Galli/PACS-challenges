@@ -129,31 +129,53 @@ void Mesh::print() {
 }
 
 void Mesh::update_seq() {
-    /**
-     * @brief Function to update the mesh using the Jacobi method
-     * @param f is the function to be solved
-    */
+  /**
+   * @brief Function to update the mesh using the Jacobi method
+   * @param f is the function to be solved
+  */
 
-    // swap the meshes, in this way the useless value are overwrite
-    mesh_old.swap(mesh);
+  // swap the meshes, in this way the useless value are overwrite
+  mesh_old.swap(mesh);
 
-    for(size_t r = 1; r < n - 1; ++r) {
-      for(size_t c = 1; c < n - 1; ++c) {
-        // calculate + update value in the mesh
-        auto coords = get_coordinates(r, c);
-        mesh[r*n + c] = 0.25*(mesh_old[(r-1)*n + c] + mesh_old[(r+1)*n + c] + mesh_old[r*n + (c-1)] + mesh_old[r*n + (c+1)] + h*h*f(coords.first, coords.second, p));
-      }
+  for(size_t r = 1; r < n - 1; ++r) {
+    for(size_t c = 1; c < n - 1; ++c) {
+      // calculate + update value in the mesh
+      auto coords = get_coordinates(r, c);
+      mesh[r*n + c] = 0.25*(mesh_old[(r-1)*n + c] + mesh_old[(r+1)*n + c] + mesh_old[r*n + (c-1)] + mesh_old[r*n + (c+1)] + h*h*f(coords.first, coords.second, p));
     }
+  }
 
-    update_error();
+  update_error();
 }
 
-void Mesh::update_error() { 
+void Mesh::update_par(const int & n_tasks) {
+  /**
+   * @brief Function to update the mesh using the Jacobi method
+   * @param f is the function to be solved
+  */
+
+  // swap the meshes, in this way the useless value are overwrite
+  mesh_old.swap(mesh);
+
+  #pragma omp parallel for num_threads(n_tasks) schedule(static)
+  for(size_t r = 1; r < n - 1; ++r) {
+    for(size_t c = 1; c < n - 1; ++c) {
+      // calculate + update value in the mesh
+      auto coords = get_coordinates(r, c);
+      mesh[r*n + c] = 0.25*(mesh_old[(r-1)*n + c] + mesh_old[(r+1)*n + c] + mesh_old[r*n + (c-1)] + mesh_old[r*n + (c+1)] + h*h*f(coords.first, coords.second, p));
+    }
+  }
+
+  update_error(n_tasks);
+}
+
+void Mesh::update_error(const int & n_tasks) { 
     /**
      * @brief Function to get the error of the mesh
      * @return the error of the mesh
     */
-    error = 0; 
+    error = 0;
+    #pragma omp parallel for num_threads(n_tasks) schedule(static) reduction(+:error)
     for(size_t i = 1; i < n - 1; ++i) {
       for(size_t j = 1; j < n - 1; ++j) {
         error += (mesh[i*n + j] - mesh_old[i*n + j])*(mesh[i*n + j] - mesh_old[i*n + j]);

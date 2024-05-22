@@ -1,7 +1,7 @@
 #include "Mesh.hpp"
 #include <fstream>
 
-bool Mesh::check(size_t i, size_t j) const {
+bool Mesh::check(const size_t & i, const size_t & j) const {
     /**
      * @brief Function to check if indexes are inside the matrix 
      * @param i row index
@@ -44,7 +44,7 @@ Mesh::Mesh(const size_t & n, const Domain & domain_, const std::string & f) : n(
   }
 }
 
-std::optional<double> Mesh::get(size_t r, size_t c) const {
+std::optional<double> Mesh::get(const size_t & r, const size_t & c) const {
     /**
      * @brief Function to get the value of the mesh
      * @param r is the row index
@@ -59,7 +59,7 @@ std::optional<double> Mesh::get(size_t r, size_t c) const {
 }
 
 
-bool Mesh::set(size_t r, size_t c, double value) {
+bool Mesh::set( const size_t & r, const size_t & c, const double & value) {
     /**
      * @brief Function to set the value of the mesh
      * @param r is the row index
@@ -75,23 +75,27 @@ bool Mesh::set(size_t r, size_t c, double value) {
 }
 
 
-void Mesh::set_boundary(size_t idx, double value, bool isColumn = false) {
+void Mesh::set_boundary(const size_t & idx, const std::vector<double> & value, const bool & isColumn = false) {
     /**
      * @brief Function to set boundary to our problem
      * @param idx is the index of row/column of the boundary
      * @param value is the value of the boundary condition 
      * @param isColumn default is false, to use column boundary or row one 
     */
+    if(value.size() != n){
+      std::cerr << "The size of the vector is not compatible with the mesh" << std::endl;
+      exit(1);
+    }
 
     if(isColumn and check(0, idx)){
       for(size_t i = 0; i < n; ++i){
-        mesh[idx + i*n] = value;
+        mesh[idx + i*n] = value[i];
       }
     } 
     else {
       if(check(idx, 0)){
         for(size_t i = 0; i < n; ++i){
-          mesh[i + idx*n] = value;
+          mesh[i + idx*n] = value[i];
         }
       }
     }
@@ -100,7 +104,7 @@ void Mesh::set_boundary(size_t idx, double value, bool isColumn = false) {
     mesh_old = mesh;
 }
 
-void Mesh::print() {
+void Mesh::print() const {
     /**
      * @brief Function to print the mesh
     */

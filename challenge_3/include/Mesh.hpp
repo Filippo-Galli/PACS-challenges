@@ -26,14 +26,14 @@ class Mesh {
 
   mu::Parser p;
 
-  bool check(size_t i, size_t j) const;
+  bool check(const size_t & i, const size_t & j) const;
 
   double f(double x, double y, mu::Parser parser);
 
   public:
   Mesh(const size_t & n, const Domain & domain_, const std::string & f);
 
-  void print(); 
+  void print() const; 
 
   void update_seq();
   void update_par(const int & n_tasks = 4);
@@ -46,11 +46,13 @@ class Mesh {
   double get_mesh_spacing() const { return h; }
   Domain get_domain() const { return domain; }
   size_t size() const { return n; }
-  std::pair<double, double> get_coordinates(size_t r, size_t c) const { return std::make_pair(domain.x0 + r*h, domain.y0 + c*h); }
+  std::pair<double, double> get_coordinates(const size_t & r, const size_t & c) const { return std::make_pair(domain.x0 + r*h, domain.y0 + c*h); }
   double get_error() const { return error; }
-  std::optional<double> get(size_t r, size_t c) const;
+  std::optional<double> get(const size_t & r, const size_t & c) const;
+  std::vector<double> get_mesh() const { return mesh; }
+
 
   // Setters
-  bool set(size_t r, size_t c, double value);
-  void set_boundary(size_t idx, double value, bool isColumn);
+  bool set(const size_t & r, const size_t & c, const double & value);
+  void set_boundary(const size_t & idx, const std::vector<double> & value, const bool & isColumn);
 };

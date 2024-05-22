@@ -1,4 +1,8 @@
 #include"Mesh.hpp"
+#include<iostream>
+#include<cmath>
+
+
 
 void solution_finder(Mesh & mesh, int n_tasks = 4){
   /**
@@ -7,8 +11,8 @@ void solution_finder(Mesh & mesh, int n_tasks = 4){
   */
 
   // update the mesh until convergence
-  double tolerance = 1e-6;
-  int n_max = 3e3;
+  double tolerance = 1e-4;
+  int n_max = 1e4;
   bool exit = false;
 
   double mean_time = 0;
@@ -84,7 +88,17 @@ int main(int argc, char *argv[]) {
 
   mesh.write("vtk_files/approx_sol.vtk");
   
+  
+  auto u = std::function<double(double, double)>([](double x, double y) -> double {return sin(2*std::numbers::pi*x)*sin(2*std::numbers::pi*y);});
+  double error = 0;
 
+  for(size_t i = 0; i < mesh.size(); ++i)
+    for(size_t j = 0; j < mesh.size(); ++j)
+      error += std::pow(mesh.get(i, j).value() - u(mesh.get_coordinates(i, j).first, mesh.get_coordinates(i, j).second), 2);
+
+  error = std::sqrt(mesh.get_mesh_spacing()* error);
+  std::cout << "Error with exact solution is: " << error << std::endl;
+  
   //MPI_Finalize();
 
   return 0;

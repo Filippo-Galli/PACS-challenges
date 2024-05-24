@@ -28,6 +28,9 @@ INCLUDES = -I$(INCLUDE_DIR)
 # Check if obj directory exists or create it
 $(shell mkdir -p $(OBJ_DIR))
 
+# Check if vtk_files directory exists or create it
+$(shell mkdir -p vtk_files)
+
 # Define the rule to build the target
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET)
@@ -47,3 +50,8 @@ debug: $(TARGET)
 # Define rule to optimize the build
 optimize: CXXFLAGS += -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-rtti
 optimize: $(TARGET)
+
+# Define the rule to compile with mpi the target
+mpi: CXX = mpic++
+mpi: CXXFLAGS += -DMPI -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-rtti
+mpi: $(TARGET)

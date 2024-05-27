@@ -10,6 +10,7 @@ class Mesh : public mesh_data_class{
 
     mu::Parser p;
     double error = 0;
+    std::string f_str;
 
     std::optional<std::string> parser_creation(const std::string & f);
 
@@ -28,6 +29,7 @@ class Mesh : public mesh_data_class{
 
     // Getters
     double get_error() const { return error; }
+    std::string get_f() const { return f_str; }
 
     // Setters
     void set_boundary(const size_t & idx, const std::vector<double> & value, const bool & isColumn);

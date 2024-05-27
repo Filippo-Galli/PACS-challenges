@@ -1,6 +1,6 @@
 #include "Solver.hpp"
 
-void Solver::print_mesh(const std::vector<double> & mesh, const size_t & n){
+void Solver::print_mesh() const{
   /**
    * @brief Function to print the mesh and rank who is printing
    * @param mesh is the mesh to be printed
@@ -21,7 +21,7 @@ void Solver::print_mesh(const std::vector<double> & mesh, const size_t & n){
   std::cout << std::endl;
 }
 
-void Solver::solution_finder_sequential(Mesh & mesh, int n_tasks){
+void Solver::solution_finder_sequential(){
   /**
    * @brief Function to find the solution of the mesh
    * @param mesh is the mesh to be solved
@@ -38,8 +38,7 @@ void Solver::solution_finder_sequential(Mesh & mesh, int n_tasks){
     // update mesh
     auto start = std::chrono::high_resolution_clock::now();
 
-    // mesh.update_seq();
-    mesh.update_par(n_tasks);
+    mesh_obj.update_seq();
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
@@ -48,23 +47,61 @@ void Solver::solution_finder_sequential(Mesh & mesh, int n_tasks){
     mean_time += duration.count();
     
     // check stopping criteria
-    exit = mesh.get_error() < c.tolerance || i == c.n_max - 1;
+    exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
 
     if(exit)
-      std::cout << "Iter: " << i<<" - time: " << mean_time/1e6 << " s - Mean time each update: "<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh.get_error() << std::endl;
+      std::cout << "Iter: " << i<<" - time: " << mean_time/1e6 << " s - Mean time each update: "<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
 
     ++i;
   }while (!exit);
 
   // save the final mesh
-  std::string filename = "vtk_files/approx_sol-1-" + std::to_string(mesh.get_size().first) + ".vtk";
-  mesh.write(filename);
+  std::string filename = "vtk_files/approx_sol-1-" + std::to_string(mesh_obj.get_size().first) + ".vtk";
+  mesh_obj.write(filename);
 }
 
-void Solver::communicate_boundary(std::vector<double> & mesh, const size_t & n){
+void Solver::solution_finder_parallel(int n_tasks){
+  /**
+   * @brief Function to find the solution of the mesh
+   * @param mesh is the mesh to be solved
+  */
+
+  // update the mesh until convergence
+  conditions c;
+  bool exit = false;
+
+  double mean_time = 0;
+
+  int i = 1;
+  do{
+    // update mesh
+    auto start = std::chrono::high_resolution_clock::now();
+
+    mesh_obj.update_par(n_tasks);
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    
+    // add the value to the mean time
+    mean_time += duration.count();
+    
+    // check stopping criteria
+    exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
+
+    if(exit)
+      std::cout << "Iter: " << i<<" - time: " << mean_time/1e6 << " s - Mean time each update: "<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
+
+    ++i;
+  }while (!exit);
+
+  // save the final mesh
+  std::string filename = "vtk_files/approx_sol-1-" + std::to_string(mesh_obj.get_size().first) + ".vtk";
+  mesh_obj.write(filename);
+}
+
+void Solver::communicate_boundary(){
   /**
    * @brief Function to communicate the boundary of the mesh
-   * @param mesh is the mesh to be communicated
    * @param n is the number of points of column of the mesh
   */
 
@@ -91,7 +128,7 @@ void Solver::communicate_boundary(std::vector<double> & mesh, const size_t & n){
   }
 }
 
-void Solver::initial_communication(std::vector<double> & initial_mesh, const size_t & n, std::vector<double> & mesh){
+void Solver::initial_communication(std::vector<double> & initial_mesh){
   /**
    * @brief Function to communicate the initial mesh
    * @param initial_mesh is the initial mesh to be communicated
@@ -127,7 +164,7 @@ void Solver::initial_communication(std::vector<double> & initial_mesh, const siz
 
 }
 
-void Solver::final_communication(std::vector<double> & mesh, std::vector<double> & final_mesh, const int & n, const std::string & f){
+void Solver::final_communication(std::vector<double> & final_mesh){
   /**
    * @brief Function to communicate adn save the final mesh
    * @param mesh is the mesh to be communicated
@@ -161,7 +198,7 @@ void Solver::final_communication(std::vector<double> & mesh, std::vector<double>
   }
 }
 
-void Solver::solution_finder_mpi(std::vector<double> & mesh, const size_t & n, const std::string & f, std::vector<double> & final_mesh, Domain d, const int & thread){
+void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & thread){
   /**
    * @brief Function to find the solution of the problem
    * @param mesh is the mesh to be computed
@@ -174,10 +211,6 @@ void Solver::solution_finder_mpi(std::vector<double> & mesh, const size_t & n, c
   int rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-  // create the mesh object to update it in each thread
-  Domain domain(d.x0, d.x1, d.y0, d.y1);
-  Mesh mesh_obj(mesh, n, domain, f);
 
   conditions c;
   int exit = 0;
@@ -207,7 +240,7 @@ void Solver::solution_finder_mpi(std::vector<double> & mesh, const size_t & n, c
 
     mesh = mesh_obj.get_mesh();
     // Communicate mesh 
-    communicate_boundary(mesh, n);
+    communicate_boundary();
     
     if(exit){
       std::cout << "Rank: "<< rank << " - iter: " << i<<" - time: " << std::setw(8) << mean_time/1e6 << " s - Mean time each update: "<< std::setw(8)<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
@@ -222,6 +255,6 @@ void Solver::solution_finder_mpi(std::vector<double> & mesh, const size_t & n, c
 
   // Communicate result
   mesh = mesh_obj.get_mesh();
-  final_communication(mesh, final_mesh, n, f);
+  final_communication(final_mesh);
   
 }

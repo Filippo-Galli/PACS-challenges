@@ -1,8 +1,3 @@
-
-#include<iostream>
-#include<cmath>
-#include<vector>
-
 #include "Solver.hpp"
 
 int main(int argc, char *argv[]) {
@@ -37,30 +32,38 @@ int main(int argc, char *argv[]) {
     // create a mesh
     Mesh mesh(n, n, domain, argv[2]);
 
-    Solver sol;
+    // Create the solver object
+    Solver sol(mesh, n);
 
-    sol.solution_finder_sequential(mesh, atoi(argv[3]));
+    // find the solution
+    sol.solution_finder_parallel(atoi(argv[3]));
 
   }
   else{
-    std::vector<double> mesh(n*n/size);
-    std::vector<double> temp_rank0;
-    if(rank == 0 or rank == size - 1)
-      mesh.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
-    else
-      mesh.resize(n*n/size + 2*n); // +2 row which are the ones of the other threads
     
-    // create a mesh
+    // declare sub-mesh and total one
+    std::vector<double> mesh_vec(n*n/size);
+    std::vector<double> total_mesh;
+
+    // correctly resize meshes
+    if(rank == 0 or rank == size - 1)
+      mesh_vec.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
+    else
+      mesh_vec.resize(n*n/size + 2*n); // +2 row which are the ones of the other threads
+    
+    // create the mesh
     if(rank == 0){
-      temp_rank0 = std::vector<double>(n*n, 0);
+      total_mesh = std::vector<double>(n*n, 0);
     }
 
-    Solver sol;
+    // Initialize solver
+    Solver sol(mesh_vec, domain, n, argv[2]);
 
-    // communicate the initial mesh
-    sol.initial_communication(temp_rank0, n, mesh);
+    // communicate total mesh
+    sol.initial_communication(total_mesh);
 
-    sol.solution_finder_mpi(mesh, atoi(argv[1]), argv[2], temp_rank0, domain, atoi(argv[3]));
+    // find the solution
+    sol.solution_finder_mpi(total_mesh, atoi(argv[3]));
   }
 
   MPI_Finalize();

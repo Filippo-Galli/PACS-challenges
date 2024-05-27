@@ -42,21 +42,22 @@ double Mesh::f(double x, double y, mu::Parser parser){
   return parser.Eval();
 }
 
-Mesh::Mesh(const size_t & row_number, const size_t & col_number, const Domain & domain_, const std::string & f) : mesh_data_class(row_number, col_number, domain_) {
+Mesh::Mesh(const size_t & row_number, const size_t & col_number, const Domain & domain_, const std::string & f) : mesh_data_class(row_number, col_number, domain_), f_str(f) {
     // TODO: manage error
     parser_creation(f);
 
 }
 
-Mesh::Mesh(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_, const std::string & f): mesh_data_class(_mesh, col_number, domain_){
+Mesh::Mesh(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_, const std::string & f): mesh_data_class(_mesh, col_number, domain_), f_str(f){
     // TODO: manage error
     parser_creation(f);
 }
 
 void Mesh::update_seq(){
-    /**
-     * @brief Function to update the mesh sequentially
-    */
+  /**
+   * @brief Function to update the mesh sequentially
+  */
+ 
   // swap the meshes, in this way the useless value are overwrite
   mesh_old.swap(mesh);
 
@@ -80,12 +81,11 @@ void Mesh::update_par(const int & n_tasks) {
   // swap the meshes, in this way the useless value are overwrite
   mesh_old.swap(mesh);
 
-  #pragma omp parallel for num_threads(n_tasks) schedule(static)
+  #pragma omp parallel for num_threads(n_tasks) 
   for(size_t r = 1; r < n_row - 1; ++r) {
     for(size_t c = 1; c < n_col - 1; ++c) {
       // calculate + update value in the mesh
       auto coords = get_coordinates(r, c);
-      //std::cout << "Rank: " << rank << " x: " << coords.first << " y: " << coords.second << std::endl;
       mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + h*h*f(coords.first, coords.second, p));
     }
   }

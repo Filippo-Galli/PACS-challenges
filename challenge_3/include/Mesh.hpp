@@ -4,6 +4,9 @@
 #include <optional>
 
 class Mesh : public mesh_data_class{
+    /**
+     * @brief Extension of the mesh_data_class to handle mesh update
+    */
 
     mu::Parser p;
     double error = 0;

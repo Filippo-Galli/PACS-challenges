@@ -16,6 +16,9 @@ struct Domain {
 };
 
 class mesh_data_class {
+    /**
+     * @brief Base class to handle the mesh data
+    */
 
     protected:
 
@@ -39,7 +42,7 @@ class mesh_data_class {
     std::optional<std::string> write(const std::string & filename) const;
 
     // Getters
-    std::vector<double> get_mesh() const { return mesh; }
+    std::vector<double> & get_mesh() { return mesh; }
     std::vector<double> get_mesh_old() const { return mesh_old; }
     std::pair<size_t, size_t> get_size() const { return std::make_pair(n_row, n_col); }
     double get_h() const { return h; }

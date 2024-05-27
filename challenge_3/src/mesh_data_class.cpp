@@ -7,6 +7,7 @@ mesh_data_class::mesh_data_class(const size_t & row_number, const size_t & col_n
      * @brief Constructor of the mesh_data_class
      * @param row_number is the number of rows of the mesh
      * @param col_number is the number of columns of the mesh
+     * @param domain_ is the domain of the mesh
     */
     
     // we use number of col since is the original n
@@ -16,29 +17,25 @@ mesh_data_class::mesh_data_class(const size_t & row_number, const size_t & col_n
     mesh.insert(mesh.end(), n_col*n_row, 0.0);
 
     // initialize mesh_old
-    mesh_old = mesh;
+    mesh_old.insert(mesh_old.end(), n_col*n_row, 0.0);
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size_th);
 }
 
-mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_): n_col(col_number), domain(domain_){
+mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_): mesh(_mesh), mesh_old(_mesh), n_col(col_number), domain(domain_){
     /**
      * @brief Constructor of the mesh_data_class
      * @param _mesh is the mesh
      * @param col_number is the number of columns of the mesh
+     * @param domain_ is the domain of the mesh
     */
-
-    mesh = _mesh;
     
     // we use number of col since is the original n
     h = (domain.y1 - domain.y0)/(n_col-1); 
 
     // we use number of col since is the original n
     n_row = mesh.size()/n_col;
-
-    // initialize mesh_old
-    mesh_old = mesh;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size_th);
@@ -76,8 +73,9 @@ std::optional<std::string> mesh_data_class::write(const std::string & filename) 
   /**
    * @brief Function to write the mesh in a vtk file in Legacy format
    * @param filename is the name of the file
-   * @return true if the mesh is written, false otherwise
+   * @return nullptr if the mesh is written, error string otherwise
   */
+
   std::ofstream file(filename);
   if (!file.is_open()) {
       return "Unable to open the file, it may not exist or you don't have the right permissions";
@@ -108,7 +106,6 @@ std::optional<std::string> mesh_data_class::write(const std::string & filename) 
 }
 
 std::pair<double, double> mesh_data_class::get_coordinates(const size_t & r, const size_t & c) const{
-
     /**
      * @brief Function to get the coordinates of the mesh
      * @param r is the row index
@@ -119,6 +116,7 @@ std::pair<double, double> mesh_data_class::get_coordinates(const size_t & r, con
     // offset for the rank
     int offset = 0;
 
+    // Adjust r and c to the correct values to get the coordinates
     if(rank == size_th - 1){
         offset = n_col - n_row;
     }
@@ -126,10 +124,7 @@ std::pair<double, double> mesh_data_class::get_coordinates(const size_t & r, con
         offset = rank*(n_row - 2) -1;
     }
 
-    //std::cout << "Rank: " << rank << " r + offset: " << r + offset << std::endl;
-
     return std::make_pair(domain.x0 + (r + offset)*h, domain.y0 + c*h);
-
 }
 
 std::optional<std::string> mesh_data_class::set_mesh(const std::vector<double> & _mesh) {
@@ -137,6 +132,7 @@ std::optional<std::string> mesh_data_class::set_mesh(const std::vector<double> &
      * @brief Function to set the mesh
      * @param _mesh is the mesh to be set
     */
+
     if(_mesh.size() != n_row*n_col){
         return "The size of the vector is not compatible with the mesh";
     }
@@ -150,6 +146,7 @@ std::optional<std::string> mesh_data_class::set_mesh_old(const std::vector<doubl
      * @brief Function to set the mesh_old
      * @param _mesh is the mesh to be set
     */
+   
     if(_mesh.size() != n_row*n_col){
         return "The size of the vector is not compatible with the mesh_old";
     }

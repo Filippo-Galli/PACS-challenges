@@ -4,8 +4,9 @@ std::optional<std::string> Mesh::parser_creation(const std::string & f){
   /**
    * @brief Function to create the parser
    * @param f is the function to parse
-   * @return the parser
+   * @return nullptr or an error message
   */
+
   p.DefineConst("pi", std::numbers::pi);
   p.DefineConst("e", std::numbers::e);
 
@@ -26,6 +27,7 @@ bool Mesh::check(const size_t & i, const size_t & j) const {
      * @param j col index
      * @return true if indexes are inside the matrix, false otherwise  
     */
+
     return i < n_row && j < n_col;
 }
 
@@ -34,23 +36,43 @@ double Mesh::f(double x, double y, mu::Parser parser){
    * @brief Function to evaluate the function f
    * @param x is the x coordinate
    * @param y is the y coordinate
-   * @param p is the parser
-   * @return the value of the function f
+   * @param parser is the muparser parser
+   * @return the value of the function f at x and y
   */
+
   parser.DefineVar("x", &x);
   parser.DefineVar("y", &y);
   return parser.Eval();
 }
 
 Mesh::Mesh(const size_t & row_number, const size_t & col_number, const Domain & domain_, const std::string & f) : mesh_data_class(row_number, col_number, domain_), f_str(f) {
-    // TODO: manage error
-    parser_creation(f);
+  /**
+   * @brief Constructor of the Mesh class
+   * @param row_number is the number of rows of the mesh
+   * @param col_number is the number of columns of the mesh
+   * @param domain_ is the domain of the mesh
+   * @param f is the function to be solved
+  */
 
+  auto error = parser_creation(f);
+  if(error.has_value()){
+    throw std::runtime_error(error.value());
+  }
 }
 
 Mesh::Mesh(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_, const std::string & f): mesh_data_class(_mesh, col_number, domain_), f_str(f){
-    // TODO: manage error
-    parser_creation(f);
+  /**
+   * @brief Constructor of the Mesh class
+   * @param _mesh is the mesh vector
+   * @param col_number is the number of columns of the mesh
+   * @param domain_ is the domain of the mesh
+   * @param f is the function to be solved
+  */
+  
+  auto error = parser_creation(f);
+  if(error.has_value()){
+    throw std::runtime_error(error.value());
+  }
 }
 
 void Mesh::update_seq(){
@@ -75,12 +97,13 @@ void Mesh::update_seq(){
 void Mesh::update_par(const int & n_tasks) {
   /**
    * @brief Function to update the mesh using the Jacobi method
-   * @param f is the function to be solved
+   * @param n_tasks is the number of parallel tasks
   */
 
   // swap the meshes, in this way the useless value are overwrite
   mesh_old.swap(mesh);
-
+  
+  
   #pragma omp parallel for num_threads(n_tasks) 
   for(size_t r = 1; r < n_row - 1; ++r) {
     for(size_t c = 1; c < n_col - 1; ++c) {
@@ -96,15 +119,16 @@ void Mesh::update_par(const int & n_tasks) {
 void Mesh::update_error(const int & n_tasks) { 
     /**
      * @brief Function to get the error of the mesh
-     * @return the error of the mesh
+     * @param n_tasks is the number of parallel tasks
     */
+
     error = 0;
+
     #pragma omp parallel for num_threads(n_tasks) schedule(static) reduction(+:error)
-    for(size_t i = 1; i < n_row - 1; ++i) {
-      for(size_t j = 1; j < n_col - 1; ++j) {
+    for(size_t i = 1; i < n_row - 1; ++i) 
+      for(size_t j = 1; j < n_col - 1; ++j) 
         error += (mesh[i*n_col + j] - mesh_old[i*n_col + j])*(mesh[i*n_col + j] - mesh_old[i*n_col + j]);
-      }
-    }
+      
     error = std::sqrt(h*error);
 }
 
@@ -116,6 +140,7 @@ void Mesh::set_boundary(const size_t & idx, const std::vector<double> & value, c
      * @param value is the value of the boundary
      * @param isColumn is true if the boundary is a column, false otherwise
     */
+
     if(isColumn){
         for(size_t i = 0; i < n_row; ++i){
             mesh[i*n_col + idx] = value[i];

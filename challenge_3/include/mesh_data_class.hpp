@@ -23,15 +23,14 @@ class mesh_data_class {
     protected:
 
     int spacing = 10;
-    std::vector<double> mesh_old;
     std::vector<double> mesh;
+    std::vector<double> mesh_old;
     size_t n_row, n_col;
     double h;
     Domain domain;
 
     int rank = 0;
     int size_th = 1;
-
     
     public:
     mesh_data_class(const size_t & row_number, const size_t & col_number, const Domain & domain_);
@@ -49,10 +48,7 @@ class mesh_data_class {
     Domain get_domain() const { return domain; }
     std::pair<double, double> get_coordinates(const size_t & r, const size_t & c) const;
 
-
     // Setters
     std::optional<std::string> set_mesh(const std::vector<double> & _mesh);
     std::optional<std::string> set_mesh_old(const std::vector<double> & _mesh);
-
-
 };

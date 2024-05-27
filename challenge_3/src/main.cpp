@@ -1,5 +1,28 @@
 #include "Solver.hpp"
 
+bool check_input(int argc, char *argv[]){
+  // check the number of arguments
+  if(argc != 4) {
+    std::cout << "Usage: " << argv[0] << " [point of the mesh]" << " [function]" << " [number of parallel task]" << std::endl;
+    return false;
+  }
+
+  // check on the number of points of the mesh
+  if(atoi(argv[1]) < 1) {
+    std::cout << "The number of points must be greater than 0" << std::endl;
+    return false;
+  }
+  
+  // check on the number of parallel tasks
+  if(atoi(argv[3]) < 1) {
+    std::cout << "The number of parallel tasks must be greater than 0" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+
 int main(int argc, char *argv[]) {
 
   MPI_Init(&argc, &argv);
@@ -7,21 +30,8 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  // check the number of arguments
-  if(argc != 4) {
-    std::cout << "Usage: " << argv[0] << " [point of the mesh]" << " [function]" << " [number of parallel task]" << std::endl;
-    return 1;
-  }
-
-  // check on the number of points of the mesh
-  if(atoi(argv[1]) < 1) {
-    std::cout << "The number of points must be greater than 0" << std::endl;
-    return 1;
-  }
-  
-  // check on the number of parallel tasks
-  if(atoi(argv[3]) < 1) {
-    std::cout << "The number of parallel tasks must be greater than 0" << std::endl;
+  if(!check_input(argc, argv)){
+    MPI_Finalize();
     return 1;
   }
   
@@ -36,7 +46,7 @@ int main(int argc, char *argv[]) {
     Solver sol(mesh, n);
 
     // find the solution
-    sol.solution_finder_parallel(atoi(argv[3]));
+    sol.solution_finder_sequential();
 
   }
   else{
@@ -46,15 +56,14 @@ int main(int argc, char *argv[]) {
     std::vector<double> total_mesh;
 
     // correctly resize meshes
-    if(rank == 0 or rank == size - 1)
+    if(rank == 0){
+      total_mesh = std::vector<double>(n*n, 0);
+      mesh_vec.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
+    }
+    else if(rank == size - 1)
       mesh_vec.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
     else
       mesh_vec.resize(n*n/size + 2*n); // +2 row which are the ones of the other threads
-    
-    // create the mesh
-    if(rank == 0){
-      total_mesh = std::vector<double>(n*n, 0);
-    }
 
     // Initialize solver
     Solver sol(mesh_vec, domain, n, argv[2]);

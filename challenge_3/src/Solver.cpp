@@ -1,13 +1,34 @@
 #include "Solver.hpp"
 
+Solver::Solver(std::vector<double> & _mesh, const Domain & d, const size_t & n_col, const std::string & f) : mesh(_mesh), mesh_obj(_mesh, n_col, d, f), n(n_col), f(f) {
+  /**
+   * @brief Constructor of the Solver class
+   * @param _mesh is the mesh to be solved
+   * @param d is the domain of the mesh
+   * @param n_col is the number of points of column of the mesh
+   * @param f is the function to be computed
+  */
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+}
+
+Solver::Solver(Mesh & m, const size_t & _n) : mesh(m.get_mesh()), mesh_obj(m), n(_n), f(m.get_f()) {
+  /**
+   * @brief Constructor of the Solver class
+   * @param m is the mesh to be solved
+   * @param _n is the number of points of column of the mesh
+  */
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+}
+
 void Solver::print_mesh() const{
   /**
    * @brief Function to print the mesh and rank who is printing
-   * @param mesh is the mesh to be printed
-   * @param n is the number of points of column of the mesh
   */
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   std::cout << "Rank: " << rank << std::endl;
   int spacing = 7;
@@ -41,7 +62,7 @@ void Solver::solution_finder_sequential(){
     mesh_obj.update_seq();
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     
     // add the value to the mean time
     mean_time += duration.count();
@@ -50,7 +71,7 @@ void Solver::solution_finder_sequential(){
     exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
 
     if(exit)
-      std::cout << "Iter: " << i<<" - time: " << mean_time/1e6 << " s - Mean time each update: "<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
+      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " mus" << std::endl;
 
     ++i;
   }while (!exit);
@@ -80,7 +101,7 @@ void Solver::solution_finder_parallel(int n_tasks){
     mesh_obj.update_par(n_tasks);
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     
     // add the value to the mean time
     mean_time += duration.count();
@@ -89,7 +110,7 @@ void Solver::solution_finder_parallel(int n_tasks){
     exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
 
     if(exit)
-      std::cout << "Iter: " << i<<" - time: " << mean_time/1e6 << " s - Mean time each update: "<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
+      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " mus"<< std::endl;
 
     ++i;
   }while (!exit);
@@ -99,32 +120,24 @@ void Solver::solution_finder_parallel(int n_tasks){
   mesh_obj.write(filename);
 }
 
-void Solver::communicate_boundary(){
+void Solver::communicate_boundary() {
   /**
    * @brief Function to communicate the boundary of the mesh
    * @param n is the number of points of column of the mesh
-  */
+   */
 
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  if (rank == 0) {
+      // Send the last computed row to the next thread and receive the last computed row from thread 1
+      MPI_Sendrecv(&mesh[mesh.size() - 2 * n], n, MPI_DOUBLE, 1, 0, &mesh[mesh.size() - n], n, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  } else if (rank == size - 1) {
+      // Send the first computed row to the previous thread and receive the first computed row from the previous thread
+      MPI_Sendrecv(&mesh[n], n, MPI_DOUBLE, rank - 1, 0, &mesh[0], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  } else {
+      // Send the first computed row to the previous thread and receive the first computed row from the previous thread
+      MPI_Sendrecv(&mesh[n], n, MPI_DOUBLE, rank - 1, 0, &mesh[0], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  if(rank == 0){
-    // send the last computed row to the next thread
-    MPI_Send(&mesh[mesh.size() - 2*n], n, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-    // receive the last computed row from thread 1
-    MPI_Recv(&mesh[mesh.size() - n], n, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  } 
-  else if(rank == size - 1){
-    MPI_Send(&mesh[n], n, MPI_DOUBLE, rank -1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&mesh[0], n, MPI_DOUBLE, rank -1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  }
-  else{
-    MPI_Send(&mesh[n], n, MPI_DOUBLE, rank -1, 0, MPI_COMM_WORLD);
-    MPI_Recv(&mesh[0], n, MPI_DOUBLE, rank -1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    
-    MPI_Recv(&mesh[mesh.size() - n], n, MPI_DOUBLE, rank +1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Send(&mesh[mesh.size() - 2*n], n, MPI_DOUBLE, rank +1, 0, MPI_COMM_WORLD);
+      // Send the last computed row to the next thread and receive the last computed row from the next thread
+      MPI_Sendrecv(&mesh[mesh.size() - 2 * n], n, MPI_DOUBLE, rank + 1, 0, &mesh[mesh.size() - n], n, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 }
 
@@ -135,10 +148,6 @@ void Solver::initial_communication(std::vector<double> & initial_mesh){
    * @param n is the number of points of column of the mesh
    * @param mesh is the mesh of each thread, the receiving buffer
   */
-
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   size_t expected_size;
   if(rank == 0 or rank == size - 1)
@@ -172,10 +181,6 @@ void Solver::final_communication(std::vector<double> & final_mesh){
    * @param n is the number of points of column of the mesh
    * @param f is the function to be computed
   */
-
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
   
   if(rank == 0){
     MPI_Gather(&mesh[0], mesh.size() - n, MPI_DOUBLE, &final_mesh[0], mesh.size()  - n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -208,10 +213,6 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
    * @param thread is the number of parallel task
   */
 
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-
   conditions c;
   int exit = 0;
   int exit_local = 0;
@@ -227,7 +228,7 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
       auto start = std::chrono::high_resolution_clock::now();
       mesh_obj.update_par(thread);
       auto stop = std::chrono::high_resolution_clock::now();
-      auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
       mean_time += duration.count();
 
@@ -242,10 +243,7 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
     // Communicate mesh 
     communicate_boundary();
     
-    if(exit){
-      std::cout << "Rank: "<< rank << " - iter: " << i<<" - time: " << std::setw(8) << mean_time/1e6 << " s - Mean time each update: "<< std::setw(8)<< mean_time/i << " mus - error: " << std::setprecision(9) << mesh_obj.get_error() << std::endl;
-    }
-    else{
+    if(!exit){
       // update mesh with the new boundary
       mesh_obj.set_mesh(mesh);
       ++i;
@@ -253,8 +251,15 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
 
   }while (!exit);
 
+  MPI_Allreduce(MPI_IN_PLACE, &mean_time, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+  // print mean time
+  if(rank == 0){
+    mean_time /= size;
+    std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " mus"<< std::endl;
+  }
+
   // Communicate result
   mesh = mesh_obj.get_mesh();
   final_communication(final_mesh);
-  
 }

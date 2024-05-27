@@ -16,10 +16,11 @@ class Solver{
     Mesh mesh_obj;
     size_t n;
     std::string f;
+    int rank, size;
 
     public:
-    Solver(std::vector<double> & _mesh, const Domain & d, const size_t & n_col, const std::string & f) : mesh(_mesh), mesh_obj(_mesh, n_col, d, f), n(n_col), f(f) {};
-    Solver(Mesh & m, const size_t & _n) : mesh(m.get_mesh()), mesh_obj(m), n(_n), f(m.get_f()) {};
+    Solver(std::vector<double> & _mesh, const Domain & d, const size_t & n_col, const std::string & f);
+    Solver(Mesh & m, const size_t & _n);
 
     void print_mesh() const;
     void solution_finder_sequential();

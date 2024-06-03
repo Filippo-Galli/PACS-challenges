@@ -47,6 +47,7 @@ class mesh_data_class {
     double get_h() const { return h; }
     Domain get_domain() const { return domain; }
     std::pair<double, double> get_coordinates(const size_t & r, const size_t & c) const;
+    double get_value(const size_t & r, const size_t & c) const {return mesh[r*n_col + c];};
 
     // Setters
     std::optional<std::string> set_mesh(const std::vector<double> & _mesh);

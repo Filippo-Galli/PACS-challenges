@@ -12,6 +12,13 @@ Solver::Solver(std::vector<double> & _mesh, const Domain & d, const size_t & n_c
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+  // calculate the offset for the communication
+  send_offset_1 = n;
+  recv_offset_1 = 0;
+
+  send_offset_2 = mesh.size() - 2 * n;
+  recv_offset_2 = mesh.size() - n;
+
 }
 
 Solver::Solver(Mesh & m, const size_t & _n) : mesh(m.get_mesh()), mesh_obj(m), n(_n), f(m.get_f()) {
@@ -71,7 +78,7 @@ void Solver::solution_finder_sequential(){
     exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
 
     if(exit)
-      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " mus" << std::endl;
+      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " ms" << std::endl;
 
     ++i;
   }while (!exit);
@@ -110,7 +117,7 @@ void Solver::solution_finder_parallel(int n_tasks){
     exit = mesh_obj.get_error() < c.tolerance || i == c.n_max - 1;
 
     if(exit)
-      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " mus"<< std::endl;
+      std::cout << "Iter: " << i<<" - time: " << mean_time << " ms - Mean time each update: "<< mean_time/i << " ms"<< std::endl;
 
     ++i;
   }while (!exit);
@@ -128,16 +135,16 @@ void Solver::communicate_boundary() {
 
   if (rank == 0) {
       // Send the last computed row to the next thread and receive the last computed row from thread 1
-      MPI_Sendrecv(&mesh[mesh.size() - 2 * n], n, MPI_DOUBLE, 1, 0, &mesh[mesh.size() - n], n, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&mesh[send_offset_2], n, MPI_DOUBLE, 1, 0, &mesh[recv_offset_2], n, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   } else if (rank == size - 1) {
       // Send the first computed row to the previous thread and receive the first computed row from the previous thread
-      MPI_Sendrecv(&mesh[n], n, MPI_DOUBLE, rank - 1, 0, &mesh[0], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&mesh[send_offset_1], n, MPI_DOUBLE, rank - 1, 0, &mesh[recv_offset_1], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   } else {
       // Send the first computed row to the previous thread and receive the first computed row from the previous thread
-      MPI_Sendrecv(&mesh[n], n, MPI_DOUBLE, rank - 1, 0, &mesh[0], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&mesh[send_offset_1], n, MPI_DOUBLE, rank - 1, 0, &mesh[recv_offset_1], n, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       // Send the last computed row to the next thread and receive the last computed row from the next thread
-      MPI_Sendrecv(&mesh[mesh.size() - 2 * n], n, MPI_DOUBLE, rank + 1, 0, &mesh[mesh.size() - n], n, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&mesh[send_offset_2], n, MPI_DOUBLE, rank + 1, 0, &mesh[recv_offset_2], n, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 }
 
@@ -149,28 +156,26 @@ void Solver::initial_communication(std::vector<double> & initial_mesh){
    * @param mesh is the mesh of each thread, the receiving buffer
   */
 
-  size_t expected_size;
-  if(rank == 0 or rank == size - 1)
-    expected_size = n*n/size + n;
-  else
-    expected_size = n*n/size + 2*n;
+  size_t expected_size = (rank == 0 or rank == size - 1) ? n*n/size + n : n*n/size + 2*n;
 
   if(rank == 0){
     // select only first 3 row of initial mesh to save into mesh 
+    
     for(size_t i = 0; i < expected_size; ++i)
       mesh[i] = initial_mesh[i];
+
+    // Send to the last thread its rows - to avoid an if inside the loop
+    MPI_Send(&initial_mesh[((size-1)*n/size -1)*n], expected_size, MPI_DOUBLE, size-1, 0, MPI_COMM_WORLD);
+
+    // Send to the other threads their rows
+    for(int proc = 1; proc < size-1; ++proc)
+      MPI_Send(&initial_mesh[(proc*n/size -1)*n], expected_size + n, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
     
-    for(int proc = 1; proc < size; ++proc){
-      if(proc == size - 1)
-        MPI_Send(&initial_mesh[(proc*n/size -1)*n], n*n/size + n, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
-      else
-        MPI_Send(&initial_mesh[(proc*n/size -1)*n], expected_size + n, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD);
-    }
   }
   else{
     MPI_Recv(&mesh[0], expected_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
-
+  
 }
 
 void Solver::final_communication(std::vector<double> & final_mesh){

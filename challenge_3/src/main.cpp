@@ -52,7 +52,8 @@ int main(int argc, char *argv[]) {
   else{
     
     // declare sub-mesh and total one
-    std::vector<double> mesh_vec(n*n/size);
+    size_t expected_size = (rank == 0 or rank == size - 1) ? n*n/size + n : n*n/size + 2*n;
+    std::vector<double> mesh_vec(expected_size, 0);
     std::vector<double> total_mesh;
 
     // correctly resize meshes
@@ -73,7 +74,24 @@ int main(int argc, char *argv[]) {
 
     // find the solution
     sol.solution_finder_mpi(total_mesh, atoi(argv[3]));
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if(rank == 0){
+      double error = 0;
+      std::function<double(double, double)> u = [](double x, double y){return sin(2*M_PI*x)*sin(2*M_PI*y);};
+      Mesh temp(total_mesh, n, domain, argv[2]);
+      for(int i = 0; i < n; ++i){
+        for(int j = 0; j < n; ++j){
+          auto [x, y] = temp.get_coordinates(i, j);
+          error += pow(temp.get_value(i, j) - u(x, y), 2);
+        }
+      }
+
+      std::cout << "Error with exact solution: " << sqrt(error) << std::endl;
+    }
   }
+  
 
   MPI_Finalize();
   return 0;

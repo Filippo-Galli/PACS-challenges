@@ -103,12 +103,12 @@ void Mesh::update_par(const int & n_tasks) {
   // swap the meshes, in this way the useless value are overwrite
   mesh_old.swap(mesh);
   
-  
-  #pragma omp parallel for num_threads(n_tasks) 
+  std::pair<double, double> coords;
+  #pragma omp parallel for num_threads(n_tasks) private(coords)
   for(size_t r = 1; r < n_row - 1; ++r) {
     for(size_t c = 1; c < n_col - 1; ++c) {
       // calculate + update value in the mesh
-      auto coords = get_coordinates(r, c);
+      coords = get_coordinates(r, c);
       mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + h*h*f(coords.first, coords.second, p));
     }
   }

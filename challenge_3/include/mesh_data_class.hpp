@@ -29,8 +29,19 @@ class mesh_data_class {
     double h;
     Domain domain;
 
+    // MPI variables
     int rank = 0;
     int size_th = 1;
+
+    // offset to corrected coordinates
+    mutable int offset = 0;
+
+    // muParser variables
+    mu::Parser p;
+    std::string f_str;
+
+    // error
+    double error = 0;
     
     public:
     mesh_data_class(const size_t & row_number, const size_t & col_number, const Domain & domain_);
@@ -52,4 +63,5 @@ class mesh_data_class {
     // Setters
     std::optional<std::string> set_mesh(const std::vector<double> & _mesh);
     std::optional<std::string> set_mesh_old(const std::vector<double> & _mesh);
+    void set_offset(const int & _offset) { offset = _offset; }
 };

@@ -2,8 +2,8 @@
 
 bool check_input(int argc, char *argv[]){
   // check the number of arguments
-  if(argc != 4) {
-    std::cout << "Usage: " << argv[0] << " [point of the mesh]" << " [function]" << " [number of parallel task]" << std::endl;
+  if(argc != 5) {
+    std::cout << "Usage: " << argv[0] << " [point of the mesh]" << " [function]" << " [number of parallel task]"  << " [function of boundaries]"<< std::endl;
     return false;
   }
 
@@ -22,6 +22,26 @@ bool check_input(int argc, char *argv[]){
   return true;
 }
 
+void distance_from_exact_solution(const Mesh & mesh){
+  /**
+   * @brief Function to calculate the distance from the exact solution to test this program
+   * @param mesh is the mesh object of the approximate solution
+   * 
+  */
+
+  conditions cond;
+  
+  double error = 0;
+  
+  for(size_t i = 0; i < mesh.get_size().first; ++i){
+    for(size_t j = 0; j < mesh.get_size().second; ++j){
+      auto [x, y] = mesh.get_coordinates(i, j);
+      error += pow(mesh.get_value(i, j) - cond.u(x, y), 2);
+    }
+  }
+
+  std::cout << "Error with exact solution: " << sqrt(mesh.get_h()*error) << std::endl;
+}
 
 int main(int argc, char *argv[]) {
 
@@ -35,64 +55,77 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   
-  int n = atoi(argv[1]);
+  size_t n = atoi(argv[1]);
   Domain domain(0, 1, 0, 1);
 
   if(size == 1){
     // create a mesh
     Mesh mesh(n, n, domain, argv[2]);
 
+    // Add boundary condition
+    mesh.add_boundary_condition(argv[4]);
+
     // Create the solver object
     Solver sol(mesh, n);
 
     // find the solution
-    sol.solution_finder_sequential();
+    auto solution_vec = sol.solution_finder_sequential();
+
+    #if TEST == 1
+    // run it only if build with test flag
+    distance_from_exact_solution(Mesh(solution_vec.value(), n, domain, argv[2]));
+    
+    #endif
 
   }
   else{
     
-    // declare sub-mesh and total one
-    size_t expected_size = (rank == 0 or rank == size - 1) ? n*n/size + n : n*n/size + 2*n;
-    std::vector<double> mesh_vec(expected_size, 0);
+    // calculate the number of rows for each thread
+    int row_eq_distr = (n - 2)/(size); // -2 since we have to row of border condition
+    int remainder = (n - 2)%(size);
+
+    std::vector<int> temp(size, row_eq_distr);
+    
+    // Distribute the remainder
+    int idx = 0;
+    for(; remainder > 0; --remainder, ++idx){
+      ++temp[idx];
+      if(idx == size)
+        idx = 0; 
+    }
+
+    // declare variable
+    std::vector<double> mesh_vec(temp[rank]*n != 0? temp[rank]*n + 2*n : 3*n, 0);
     std::vector<double> total_mesh;
 
     // correctly resize meshes
     if(rank == 0){
-      total_mesh = std::vector<double>(n*n, 0);
-      mesh_vec.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
-    }
-    else if(rank == size - 1)
-      mesh_vec.resize(n*n/size + n); // +1 row since it has only 1 row as "boundary"
-    else
-      mesh_vec.resize(n*n/size + 2*n); // +2 row which are the ones of the other threads
+      total_mesh = std::vector<double>(n*n, 0);  
+      Mesh templ_mesh(total_mesh, n, domain, argv[2]);
 
-    // Initialize solver
+      // Add border condition if needed
+      templ_mesh.add_boundary_condition(argv[4]);
+
+      total_mesh.assign(templ_mesh.get_mesh().begin(), templ_mesh.get_mesh().end());
+    }
+
+    //Initialize solver
     Solver sol(mesh_vec, domain, n, argv[2]);
 
-    // communicate total mesh
+    // initial communication
     sol.initial_communication(total_mesh);
 
     // find the solution
-    sol.solution_finder_mpi(total_mesh, atoi(argv[3]));
+    sol.solution_finder_mpi(total_mesh, atoi(argv[3]));    
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
+    #if TEST == 1
+    // run it only if build with test flag
     if(rank == 0){
-      double error = 0;
-      std::function<double(double, double)> u = [](double x, double y){return sin(2*M_PI*x)*sin(2*M_PI*y);};
-      Mesh temp(total_mesh, n, domain, argv[2]);
-      for(int i = 0; i < n; ++i){
-        for(int j = 0; j < n; ++j){
-          auto [x, y] = temp.get_coordinates(i, j);
-          error += pow(temp.get_value(i, j) - u(x, y), 2);
-        }
-      }
-
-      std::cout << "Error with exact solution: " << sqrt(error) << std::endl;
+      distance_from_exact_solution(Mesh(total_mesh, n, domain, argv[2]));
     }
+    #endif
   }
   
-
   MPI_Finalize();
   return 0;
 }

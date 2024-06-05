@@ -1,8 +1,8 @@
 # Define the compiler
-CXX = g++
+CXX = mpicxx
 
 # Define compiler flags
-CXXFLAGS = -Wall -Wextra -std=c++20 -fopenmp -lmuparser
+CXXFLAGS = -DMPI -Wall -Wextra -std=c++20 -fopenmp -lmuparser -lomp
 DEBUG_CXXFLAGS = -DDEBUG
 
 # Define the number of threads to use for the build
@@ -47,11 +47,10 @@ clean:
 debug: CXXFLAGS += -Og $(DEBUG_CXXFLAGS)
 debug: $(TARGET)
 
-# Define rule to optimize the build
-optimize: CXXFLAGS += -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-rtti
-optimize: $(TARGET)
-
 # Define the rule to compile with mpi the target
-mpi: CXX = mpic++
-mpi: CXXFLAGS += -DMPI -O3 -march=native -fomit-frame-pointer -mtune=native -flto -fno-rtti
+mpi: CXXFLAGS += -O3 
 mpi: $(TARGET)
+
+# Define the rule to compile and run the tests
+test_compile: CXXFLAGS += -O3 -DTEST=1
+test_compile: $(TARGET)

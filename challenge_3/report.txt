@@ -1,0 +1,24 @@
+
+ Processes: 1 
+	 size:   4 Iteration count:     26 	 total_time          1 ms 	 mean time one update  0.0384615 mus	 error: 0.400245
+	 size:   8 Iteration count:     34 	 total_time          8 ms 	 mean time one update   0.235294 mus	 error: 0.0925136
+	 size:  16 Iteration count:    160 	 total_time        646 ms 	 mean time one update     4.0375 mus	 error: 0.0285638
+
+
+ Processes: 2 
+	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
+	 size:   8 Iteration count:     34 	 total_time          2 ms 	 mean time one update  0.0588235 mus	 error: 0.0925136
+	 size:  16 Iteration count:    156 	 total_time        314 ms 	 mean time one update    2.01282 mus	 error: 0.0285634
+
+
+ Processes: 3 
+	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
+	 size:   8 Iteration count:     33 	 total_time          2 ms 	 mean time one update  0.0606061 mus	 error: 0.0925135
+	 size:  16 Iteration count:    155 	 total_time    162.667 ms 	 mean time one update    1.04946 mus	 error: 0.0285629
+
+
+ Processes: 4 
+	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
+	 size:   8 Iteration count:     33 	 total_time       1.25 ms 	 mean time one update  0.0378788 mus	 error: 0.0925135
+	 size:  16 Iteration count:    153 	 total_time      88.75 ms 	 mean time one update   0.580065 mus	 error: 0.0285627
+

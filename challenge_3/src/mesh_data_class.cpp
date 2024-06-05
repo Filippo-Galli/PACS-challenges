@@ -18,9 +18,10 @@ mesh_data_class::mesh_data_class(const size_t & row_number, const size_t & col_n
 
     // initialize mesh_old
     mesh_old.insert(mesh_old.end(), n_col*n_row, 0.0);
-
+    
+    // save the rank and the number of threads
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size_th);
+    MPI_Comm_size(MPI_COMM_WORLD, &size_th);    
 }
 
 mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_): mesh(_mesh), mesh_old(_mesh), n_col(col_number), domain(domain_){
@@ -37,6 +38,7 @@ mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t
     // we use number of col since is the original n
     n_row = mesh.size()/n_col;
 
+    // save the rank and the number of threads
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size_th);
 }
@@ -45,6 +47,7 @@ void mesh_data_class::print() const {
     /**
      * @brief Function to print the mesh
     */
+    std::cout << "Rank: " << rank << std::endl;
     std::cout << std::endl;
 
     std::cout << std::setw(spacing +2) <<"| ";
@@ -110,20 +113,8 @@ std::pair<double, double> mesh_data_class::get_coordinates(const size_t & r, con
      * @brief Function to get the coordinates of the mesh
      * @param r is the row index
      * @param c is the column index
-     * @return the coordinates of the mesh
+     * @return x-y coordinates of a given rand c
     */ 
-
-    // offset for the rank
-    int offset = 0;
-
-    // Adjust r and c to the correct values to get the coordinates
-    if(rank == size_th - 1){
-        offset = n_col - n_row;
-    }
-    else if (rank != 0){
-        offset = rank*(n_row - 2) -1;
-    }
-
     return std::make_pair(domain.x0 + (r + offset)*h, domain.y0 + c*h);
 }
 

@@ -13,6 +13,7 @@
 
 struct Domain {
     double x0, x1, y0, y1;
+    Domain(double _x0, double _x1, double _y0, double _y1) : x0(_x0), x1(_x1), y0(_y0), y1(_y1) {};
 };
 
 class mesh_data_class {
@@ -31,7 +32,7 @@ class mesh_data_class {
 
     // MPI variables
     int rank = 0;
-    int size_th = 1;
+    int size = 1;
 
     // offset to corrected coordinates
     mutable int offset = 0;

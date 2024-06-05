@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     mesh.add_boundary_condition(argv[4]);
 
     // Create the solver object
-    Solver sol(mesh, n);
+    Solver sol(mesh);
 
     // find the solution
     auto solution_vec = sol.solution_finder_sequential();
@@ -100,7 +100,8 @@ int main(int argc, char *argv[]) {
 
     // correctly resize meshes
     if(rank == 0){
-      total_mesh = std::vector<double>(n*n, 0);  
+      total_mesh = std::vector<double>(n*n, 0); 
+
       Mesh templ_mesh(total_mesh, n, domain, argv[2]);
 
       // Add border condition if needed

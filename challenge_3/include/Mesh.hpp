@@ -8,6 +8,9 @@ class Mesh : public mesh_data_class{
      * @brief Extension of the mesh_data_class to handle mesh update
     */
 
+    protected:
+    std::vector<double> f_eval;
+
     std::optional<std::string> parser_creation(const std::string & f);
     bool check(const size_t & i, const size_t & j) const;
     double f(double x, double y, mu::Parser parser);
@@ -28,4 +31,5 @@ class Mesh : public mesh_data_class{
     // Setters
     void set_boundary(const size_t & idx, const std::vector<double> & value, const bool & isColumn);
     std::optional<std::string> add_boundary_condition(const std::string & f);
+    void set_f_eval(const std::vector<double> & f) { f_eval = f; }
 };

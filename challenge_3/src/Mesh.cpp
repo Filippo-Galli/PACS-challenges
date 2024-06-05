@@ -1,4 +1,5 @@
 #include "Mesh.hpp"
+#include <muParser.h>
 
 std::optional<std::string> Mesh::parser_creation(const std::string & f){
   /**
@@ -59,6 +60,12 @@ Mesh::Mesh(const size_t & row_number, const size_t & col_number, const Domain & 
   if(error.has_value()){
     throw std::runtime_error(error.value());
   }
+
+  // set values of the f_eval
+  f_eval.resize(n_row*n_col, 0);
+  std::pair<double, double> coords;
+  p.DefineVar("x", &coords.first);
+  p.DefineVar("y", &coords.second);
 }
 
 Mesh::Mesh(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_, const std::string & f): mesh_data_class(_mesh, col_number, domain_){
@@ -84,13 +91,14 @@ void Mesh::update_seq(){
   */
  
   // swap the meshes, in this way the useless value are overwrite
-  mesh_old.swap(mesh);
+  std::swap(mesh, mesh_old);
+
+  // Precompute constant values outside the loop
+  const double hh = h * h;
 
   for(size_t r = 1; r < n_row - 1; ++r) {
     for(size_t c = 1; c < n_col - 1; ++c) {
-      // calculate + update value in the mesh
-      auto coords = get_coordinates(r, c);
-      mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + h*h*f(coords.first, coords.second, p));
+      mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + hh*f_eval[r*n_col + c]);
     }
   }
 
@@ -102,17 +110,17 @@ void Mesh::update_par(const int & n_tasks) {
    * @brief Function to update the mesh using the Jacobi method - openMP parallel version
    * @param n_tasks is the number of parallel tasks
   */
-
+  
   // swap the meshes, in this way the useless value are overwrite
-  mesh_old.swap(mesh);
+  std::swap(mesh, mesh_old);
 
-  std::pair<double, double> coords;
-  #pragma omp parallel for num_threads(n_tasks) private(coords)
+  // Precompute constant values outside the loop
+  const double hh = h * h;
+
+  #pragma omp parallel for num_threads(n_tasks)
   for(size_t r = 1; r < n_row - 1; ++r) {
     for(size_t c = 1; c < n_col - 1; ++c) {
-      // calculate + update value in the mesh
-      coords = get_coordinates(r, c);
-      mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + h*h*f(coords.first, coords.second, p));
+      mesh[r*n_col + c] = 0.25*(mesh_old[(r-1)*n_col + c] + mesh_old[(r+1)*n_col + c] + mesh_old[r*n_col + (c-1)] + mesh_old[r*n_col + (c+1)] + hh*f_eval[r*n_col + c]);
     }
   }
 

@@ -21,7 +21,7 @@ mesh_data_class::mesh_data_class(const size_t & row_number, const size_t & col_n
     
     // save the rank and the number of threads
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size_th);    
+    MPI_Comm_size(MPI_COMM_WORLD, &size);    
 }
 
 mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t & col_number, const Domain & domain_): mesh(_mesh), mesh_old(_mesh), n_col(col_number), domain(domain_){
@@ -40,7 +40,7 @@ mesh_data_class::mesh_data_class(const std::vector<double> & _mesh, const size_t
 
     // save the rank and the number of threads
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size_th);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 }
 
 void mesh_data_class::print() const {

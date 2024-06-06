@@ -213,7 +213,7 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
   if(rank == 0)
-    std::cout << "Time: " << duration.count() << " ms" << " - Iter: " << iter << std::endl;
+    std::cout << "Time: " << duration.count() << " ms - Iter: " << iter << std::endl;
 
   final_communication(final_mesh);
 }

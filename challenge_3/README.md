@@ -59,6 +59,7 @@ The script will firstly sequentially solve the problem from a dimension of 4x4 t
 
 # Results
 My computations time are stored in the file `report.txt`. While the file `hw.info` contains the information about the machine I used to run the tests. I test all my 12 cores with matrices from 4x4 to 256x256.
+In my test, after retake all test multiple times, I see that the best configuration is 6 MPI process and 1 openMP. I think that increasing the number of processor cause more overhead of communication between the processes thmeself that is bigger than the gain of the parallelization.
 
 # Code Organization
 I have created 3 class to better divide the work and each one has its own duties to better organize the code and keep it maintainable.

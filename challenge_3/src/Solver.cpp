@@ -55,7 +55,6 @@ std::optional<std::vector<double>> Solver::solution_finder_sequential(){
   double e = 10;
 
   // Sequential computation
-  std::endl(std::cout);
   auto start = std::chrono::high_resolution_clock::now();
   for(int i = 0; i < c.n_max && e > c.tolerance; ++i){
     update_par();
@@ -192,29 +191,22 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
   conditions c;
   int iter = 0;
   double e = 10;
-  int exit_local = n_row == 0 ? 1 : 0; // if the mesh is empty the local exit condition is reached
-  int exit = 0;
+  int exit = n_row == 0 ? 1 : 0; // if the mesh is empty the local exit condition is reached
 
-  // Sequential computation
-  std::endl(std::cout);
+  // Parallel computation
   auto start = std::chrono::high_resolution_clock::now();
 
-  for(int i = 0; i < c.n_max && exit != size ; ++i){
-    if(!exit_local){
-      update_par(thread);
-      ++iter;
-      e = get_error();
-      exit_local = (e < c.tolerance || i == c.n_max ) ? 1 : 0;
-    }
+  for(int i = 0; i < c.n_max && exit < size ; ++i){
+    update_par(thread);
+    ++iter;
+    e = get_error();
+    exit = (e < c.tolerance || i == c.n_max - 1 ) ? 1 : 0;
 
     // Communicate local exit condition to all threads
-    MPI_Allreduce(&exit_local, &exit, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &exit, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
     // Communicate new boundary of each mesh to the other processes 
     communicate_boundary();
-
-    // iter counter update
-    ++i;
   }
 
   auto end = std::chrono::high_resolution_clock::now();

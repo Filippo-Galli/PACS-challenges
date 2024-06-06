@@ -16,6 +16,7 @@ class Mesh : public mesh_data_class{
 
     std::optional<std::string> parser_creation(const std::string & f);
     bool check(const size_t & i, const size_t & j) const;
+    double f(double x, double y, mu::Parser parser);
 
     public:
     Mesh(const size_t & row_number, const size_t & col_number, const Domain & domain_, const std::string & f);

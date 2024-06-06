@@ -1,6 +1,20 @@
 #include "Mesh.hpp"
 #include <muParser.h>
 
+double Mesh::f(double x, double y, mu::Parser parser){
+  /**
+   * @brief Function to evaluate the function f
+   * @param x is the x coordinate
+   * @param y is the y coordinate
+   * @param parser is the muparser parser
+   * @return the value of the function f at x and y
+  */
+
+  parser.DefineVar("x", &x);
+  parser.DefineVar("y", &y);
+  return parser.Eval();
+}
+
 void Mesh::f_eval_creation(){
   /**
    * @brief Function to create the f_eval vector

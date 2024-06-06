@@ -62,10 +62,10 @@ int main(int argc, char *argv[]) {
     // create a mesh
     Mesh mesh(n, n, domain, argv[2]);
 
-    // Add boundary condition
+    // cdd boundary condition
     mesh.add_boundary_condition(argv[4]);
 
-    // Create the solver object
+    // create the solver object
     Solver sol(mesh);
 
     // find the solution
@@ -74,7 +74,6 @@ int main(int argc, char *argv[]) {
     #if TEST == 1
     // run it only if build with test flag
     distance_from_exact_solution(Mesh(solution_vec.value(), n, domain, argv[2]));
-    
     #endif
 
   }
@@ -86,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<int> temp(size, row_eq_distr);
     
-    // Distribute the remainder
+    // distribute the remainder
     int idx = 0;
     for(; remainder > 0; --remainder, ++idx){
       ++temp[idx];
@@ -104,13 +103,14 @@ int main(int argc, char *argv[]) {
 
       Mesh templ_mesh(total_mesh, n, domain, argv[2]);
 
-      // Add border condition if needed
+      // add border condition if needed
       templ_mesh.add_boundary_condition(argv[4]);
 
+      // copy the mesh to the total mesh with border conditions
       total_mesh.assign(templ_mesh.get_mesh().begin(), templ_mesh.get_mesh().end());
     }
 
-    //Initialize solver
+    // initialize solver
     Solver sol(mesh_vec, domain, n, argv[2]);
 
     // initial communication

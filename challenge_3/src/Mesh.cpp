@@ -1,6 +1,27 @@
 #include "Mesh.hpp"
 #include <muParser.h>
 
+void Mesh::f_eval_creation(){
+  /**
+   * @brief Function to create the f_eval vector
+  */
+
+  // Create evaluation of f
+  f_eval.resize(n_row * n_col, 0);
+  std::pair<double, double> coords;
+  p.DefineVar("x", &coords.first);
+  p.DefineVar("y", &coords.second);
+
+  for(size_t r = 1; r < n_row - 1; ++r) {
+    for(size_t c = 1; c < n_col - 1; ++c) {
+      // calculate + update value in the mesh
+      coords = get_coordinates(r, c);
+      f_eval[r*n_col + c] = p.Eval();
+    }
+  }
+
+}
+
 std::optional<std::string> Mesh::parser_creation(const std::string & f){
   /**
    * @brief Function to create the parser
@@ -30,20 +51,6 @@ bool Mesh::check(const size_t & i, const size_t & j) const {
     */
 
     return i < n_row && j < n_col;
-}
-
-double Mesh::f(double x, double y, mu::Parser parser){
-  /**
-   * @brief Function to evaluate the function f
-   * @param x is the x coordinate
-   * @param y is the y coordinate
-   * @param parser is the muparser parser
-   * @return the value of the function f at x and y
-  */
-
-  parser.DefineVar("x", &x);
-  parser.DefineVar("y", &y);
-  return parser.Eval();
 }
 
 Mesh::Mesh(const size_t & row_number, const size_t & col_number, const Domain & domain_, const std::string & f) : mesh_data_class(row_number, col_number, domain_) {

@@ -47,21 +47,7 @@ std::optional<std::vector<double>> Solver::solution_finder_sequential(){
   */
 
   // Create evaluation of f
-  f_eval.resize(n_row * n_col, 0);
-  std::pair<double, double> coords;
-  p.DefineVar("x", &coords.first);
-  p.DefineVar("y", &coords.second);
-
-  for(size_t r = 1; r < n_row - 1; ++r) {
-    for(size_t c = 1; c < n_col - 1; ++c) {
-      // calculate + update value in the mesh
-      coords = get_coordinates(r, c);
-      if(rank == 1){
-        std::cout << coords.first << " " << coords.second << std::endl;
-      }
-      f_eval[r*n_col + c] = p.Eval();
-    }
-  }
+  f_eval_creation();
 
   // Variables creation
   conditions c;
@@ -200,18 +186,7 @@ void Solver::solution_finder_mpi(std::vector<double> & final_mesh, const int & t
   */
 
   // Create evaluation of f
-  f_eval.resize(n_row * n_col, 0);
-  std::pair<double, double> coords;
-  p.DefineVar("x", &coords.first);
-  p.DefineVar("y", &coords.second);
-
-  for(size_t r = 1; r < n_row - 1; ++r) {
-    for(size_t c = 1; c < n_col - 1; ++c) {
-      // calculate + update value in the mesh
-      coords = get_coordinates(r, c);
-      f_eval[r*n_col + c] = p.Eval();
-    }
-  }
+  f_eval_creation();
 
   // Variables creation
   conditions c;

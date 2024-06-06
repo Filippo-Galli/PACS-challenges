@@ -1,24 +1,120 @@
 
  Processes: 1 
-	 size:   4 Iteration count:     26 	 total_time          1 ms 	 mean time one update  0.0384615 mus	 error: 0.400245
-	 size:   8 Iteration count:     34 	 total_time          8 ms 	 mean time one update   0.235294 mus	 error: 0.0925136
-	 size:  16 Iteration count:    160 	 total_time        646 ms 	 mean time one update     4.0375 mus	 error: 0.0285638
+	 size:   4 Iteration count:     26 	 total_time        6 ms 	 error: 0.400245
+	 size:   8 Iteration count:     34 	 total_time        2 ms 	 error: 0.0925136
+	 size:  16 Iteration count:    160 	 total_time        8 ms 	 error: 0.0285638
+	 size:  32 Iteration count:    642 	 total_time       17 ms 	 error: 0.00954511
+	 size:  64 Iteration count:   2449 	 total_time       63 ms 	 error: 0.00327121
+	 size: 128 Iteration count:   9101 	 total_time      348 ms 	 error: 0.00106785
+	 size: 256 Iteration count:  33255 	 total_time     3392 ms 	 error: 7.46541e-05
 
 
  Processes: 2 
-	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
-	 size:   8 Iteration count:     34 	 total_time          2 ms 	 mean time one update  0.0588235 mus	 error: 0.0925136
-	 size:  16 Iteration count:    156 	 total_time        314 ms 	 mean time one update    2.01282 mus	 error: 0.0285634
+	 size:   4 Iteration count:     25 	 total_time        2 ms 	 error: 0.400245
+	 size:   8 Iteration count:     34 	 total_time        1 ms 	 error: 0.0925136
+	 size:  16 Iteration count:    156 	 total_time        2 ms 	 error: 0.0285634
+	 size:  32 Iteration count:    626 	 total_time       11 ms 	 error: 0.00954324
+	 size:  64 Iteration count:   2380 	 total_time       42 ms 	 error: 0.00326302
+	 size: 128 Iteration count:   8818 	 total_time      170 ms 	 error: 0.00103406
+	 size: 256 Iteration count:  32114 	 total_time     2381 ms 	 error: 6.16734e-05
 
 
  Processes: 3 
-	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
-	 size:   8 Iteration count:     33 	 total_time          2 ms 	 mean time one update  0.0606061 mus	 error: 0.0925135
-	 size:  16 Iteration count:    155 	 total_time    162.667 ms 	 mean time one update    1.04946 mus	 error: 0.0285629
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     33 	 total_time        1 ms 	 error: 0.0925135
+	 size:  16 Iteration count:    155 	 total_time        3 ms 	 error: 0.0285629
+	 size:  32 Iteration count:    613 	 total_time       11 ms 	 error: 0.00954055
+	 size:  64 Iteration count:   2327 	 total_time       35 ms 	 error: 0.0032516
+	 size: 128 Iteration count:   8579 	 total_time      164 ms 	 error: 0.000985501
+	 size: 256 Iteration count:  31154 	 total_time     1203 ms 	 error: 0.000262048
 
 
  Processes: 4 
-	 size:   4 Iteration count:     25 	 total_time          1 ms 	 mean time one update       0.04 mus	 error: 0.400245
-	 size:   8 Iteration count:     33 	 total_time       1.25 ms 	 mean time one update  0.0378788 mus	 error: 0.0925135
-	 size:  16 Iteration count:    153 	 total_time      88.75 ms 	 mean time one update   0.580065 mus	 error: 0.0285627
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     33 	 total_time        1 ms 	 error: 0.0925135
+	 size:  16 Iteration count:    153 	 total_time        4 ms 	 error: 0.0285627
+	 size:  32 Iteration count:    608 	 total_time       11 ms 	 error: 0.00954005
+	 size:  64 Iteration count:   2305 	 total_time       42 ms 	 error: 0.00325031
+	 size: 128 Iteration count:   8521 	 total_time      157 ms 	 error: 0.000984054
+	 size: 256 Iteration count:  30940 	 total_time     1037 ms 	 error: 0.000259366
+
+
+ Processes: 5 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     33 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    152 	 total_time        5 ms 	 error: 0.0285622
+	 size:  32 Iteration count:    598 	 total_time       12 ms 	 error: 0.00953692
+	 size:  64 Iteration count:   2271 	 total_time       55 ms 	 error: 0.00323472
+	 size: 128 Iteration count:   8346 	 total_time      168 ms 	 error: 0.000915529
+	 size: 256 Iteration count:  30100 	 total_time      928 ms 	 error: 0.000579928
+
+
+ Processes: 6 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    151 	 total_time        5 ms 	 error: 0.0285618
+	 size:  32 Iteration count:    590 	 total_time       14 ms 	 error: 0.00953606
+	 size:  64 Iteration count:   2236 	 total_time       55 ms 	 error: 0.00323059
+	 size: 128 Iteration count:   8168 	 total_time      174 ms 	 error: 0.00090179
+	 size: 256 Iteration count:  29523 	 total_time      892 ms 	 error: 0.000604849
+
+
+ Processes: 7 
+	 size:   4 Iteration count:     25 	 total_time        2 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        5 ms 	 error: 0.0285614
+	 size:  32 Iteration count:    590 	 total_time       14 ms 	 error: 0.00953354
+	 size:  64 Iteration count:   2188 	 total_time       60 ms 	 error: 0.00321502
+	 size: 128 Iteration count:   7999 	 total_time      161 ms 	 error: 0.000831606
+	 size: 256 Iteration count:  28851 	 total_time     1147 ms 	 error: 0.000936059
+
+
+ Processes: 8 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        1 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        4 ms 	 error: 0.0285611
+	 size:  32 Iteration count:    577 	 total_time       15 ms 	 error: 0.00953156
+	 size:  64 Iteration count:   2159 	 total_time       58 ms 	 error: 0.00321267
+	 size: 128 Iteration count:   7882 	 total_time      160 ms 	 error: 0.000826652
+	 size: 256 Iteration count:  28251 	 total_time     1171 ms 	 error: 0.000917247
+
+
+ Processes: 9 
+	 size:   4 Iteration count:     25 	 total_time        2 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        4 ms 	 error: 0.028561
+	 size:  32 Iteration count:    577 	 total_time       15 ms 	 error: 0.00952998
+	 size:  64 Iteration count:   2124 	 total_time       58 ms 	 error: 0.0031961
+	 size: 128 Iteration count:   7731 	 total_time      153 ms 	 error: 0.000751404
+	 size: 256 Iteration count:  27791 	 total_time     1152 ms 	 error: 0.00128975
+
+
+ Processes: 10 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        4 ms 	 error: 0.0285608
+	 size:  32 Iteration count:    560 	 total_time       17 ms 	 error: 0.00952851
+	 size:  64 Iteration count:   2124 	 total_time       55 ms 	 error: 0.00319323
+	 size: 128 Iteration count:   7654 	 total_time      176 ms 	 error: 0.00074352
+	 size: 256 Iteration count:  27313 	 total_time     1193 ms 	 error: 0.00128211
+
+
+ Processes: 11 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        4 ms 	 error: 0.0285605
+	 size:  32 Iteration count:    560 	 total_time       15 ms 	 error: 0.00952633
+	 size:  64 Iteration count:   2084 	 total_time       57 ms 	 error: 0.00318592
+	 size: 128 Iteration count:   7564 	 total_time      178 ms 	 error: 0.000686618
+	 size: 256 Iteration count:  26933 	 total_time     1158 ms 	 error: 0.00166331
+
+
+ Processes: 12 
+	 size:   4 Iteration count:     25 	 total_time        1 ms 	 error: 0.400245
+	 size:   8 Iteration count:     32 	 total_time        2 ms 	 error: 0.0925134
+	 size:  16 Iteration count:    147 	 total_time        5 ms 	 error: 0.0285601
+	 size:  32 Iteration count:    560 	 total_time       17 ms 	 error: 0.00952572
+	 size:  64 Iteration count:   2083 	 total_time       55 ms 	 error: 0.00317441
+	 size: 128 Iteration count:   7466 	 total_time      179 ms 	 error: 0.00064745
+	 size: 256 Iteration count:  26544 	 total_time     1081 ms 	 error: 0.00161821
 

@@ -12,6 +12,9 @@ To use this program you need to have installed muParser. This is the [guide](htt
 ## MPI and OpenMP
 Guides on how to download them are easily found online.
 
+## P
+To create the plot of the perfomance (time of execution and error) I create the file plot,csv inside tests folder. Plots are made using R and library ggplot. But you can use any software which convert csv to plot. 
+
 # How to use it
 
 ## Set parameters
@@ -47,18 +50,21 @@ mpirun -np 4 ./main 4 "2*pi*pi*sin(pi*x)*sin(pi*y)" 4 "0"
 ```
 
 ## Testing
-To test the program you can use the following command:
+To test the program you can use the following script locate inside the folder `tests`:
 ```bash
-bash test.sh
+bash tests/test.sh
 ```
 It will ask 2 number: 
 - the first one is the maximum power of 2 to use as dimension of the matrix;
 - the second one is the number of processes to use (Max number of processes of your machine that MPI can use, usually is the number of cores);
 
 The script will firstly sequentially solve the problem from a dimension of 4x4 to 2^max_power x 2^max_power and then will solve the problem in parallel using each possible configuration of processes from 2 to input of the program for each possible dimension (from 4x4 to 2^max_power x 2^max_power). Since the program test multiple configurations, output will be saved in a file called `report.txt`.
+There will be also a file called `plot.csv` which contains processes/size/time/error to create the plot of the perfomance and a folder called plots which contains the plots of the perfomance.
+
+To create plot I use R and ggplot inside the script `tests/plot_script.R`.
 
 # Results
-My computations time are stored in the file `report.txt`. While the file `hw.info` contains the information about the machine I used to run the tests. I test all my 12 cores with matrices from 4x4 to 256x256.
+My computations time are stored in the file `report.txt`. While the file `hw.info` contains the information about the machine I used to run the tests. I test all my 12 cores with matrices from 4x4 to 256x256 with a tolerance of 1e-6 and max number of iteration 1e5.
 In my test, after retake all test multiple times, I see that the best configuration is 6 MPI process and 1 openMP. I think that increasing the number of processor cause more overhead of communication between the processes thmeself that is bigger than the gain of the parallelization.
 
 # Code Organization

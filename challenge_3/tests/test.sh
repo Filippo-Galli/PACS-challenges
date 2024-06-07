@@ -14,11 +14,25 @@ function report_generation() {
 	# Extract error to exact solution
 	error_to_exact_solution=$(echo "$output" | grep -oP '(?<=Error with exact solution: )[\d.]+([eE][-+]?\d+)?')
 
-	printf "\t size: %3s Iteration count: %6d \t total_time %8d ms \t error: %8s\n" "$1" "$iter_count" "$total_time" "$error_to_exact_solution" >>report.txt
+	printf "\t size: %3s Iteration count: %6d \t total_time %8d ms \t error: %8s\n" "$1" "$iter_count" "$total_time" "$error_to_exact_solution" >>./tests/report.txt
+	printf "$1,$total_time,$error_to_exact_solution\n" >>./tests/plot.csv
 }
 
-# Remove the old report file
-rm -f report.txt
+# Check if the user is inside the tests folder
+if [ ! -d tests ]; then
+	echo "Error: You must run this script from the upper folder" >&2
+	exit 1
+fi
+
+# check if exist and in case remove the old report file
+if [ -f ./tests/report.txt ]; then
+	rm ./tests/report.txt
+fi
+
+# Check if the plot file exists and in case remove it
+if [ -f ./tests/plot.csv ]; then
+	rm ./tests/plot.csv
+fi
 
 # Compile the code in test mode
 make clean
@@ -31,13 +45,13 @@ printf "All the result will be available on report.txt inside this folder.\n"
 printf "##############################################################################################################\n"
 
 # Prompt the user to enter a number for max power of 2
-printf "\n1) Insert max power of 2 used as dimension of matrix to test (from 2 to 9):"
+printf "\n1) Insert max power of 2 used as dimension of matrix to test (from 2 to 9): "
 read num
 # Prompt the user to enter a number for max number of MPI processes
-printf "2) Insert max number of process of MPI to test (at least 2):"
+printf "2) Insert max number of process of MPI to test (at least 2): "
 read thread
 
-# Check if the input is a valid number and greater than 1
+#Check if the input is a valid number and greater than 1
 if ! [[ "$thread" =~ ^[0-9]+$ ]] || ((thread <= 1)); then
 	echo "Error: Not a thread number < 1 or not valid" >&2
 	exit 1
@@ -51,34 +65,36 @@ fi
 
 # Sequential test
 printf "\nStarting sequential test:\n\n"
-printf "\n Processes: 1 \n" >>report.txt
+printf "\n Processes: 1 \n" >>tests/report.txt
+printf "Processes,Size,Time_ms,Error\n" >>./tests/plot.csv
 for ((i = 2; i <= num; i++)); do
 	size=$((2 ** i))
 	printf "########### Test %d: with %d grid points ########### \n" "$((i - 2))" "$size"
 	output=$(mpiexec -n 1 ./main $size "8*pi^2*sin(2*pi*x)*sin(2*pi*y)" 1 "0")
 
+	printf "1," >>./tests/plot.csv
 	# Extract information from the output
 	report_generation $size "$output"
 
 	printf "\n"
 done
 
-printf "\n" >>report.txt
+printf "\n" >>./tests/report.txt
 
 # Parallel test
 printf "\nStarting parallel test:\n\n"
 for ((j = 2; j <= thread; j++)); do
-	printf "\n Processes: $j \n" >>report.txt
+	printf "\n Processes: $j \n" >>./tests/report.txt
 	for ((i = 2; i <= num; i++)); do
 		size=$((2 ** i))
 		printf "########### Processes %d: with %d grid points ###########\n" "$j" "$size"
 		output=$(mpiexec -n $j ./main $size "8*pi^2*sin(2*pi*x)*sin(2*pi*y)" 1 "0")
 
+		printf "$j," >>./tests/plot.csv
 		# Extract information from the output
 		report_generation $size "$output"
 
 		printf "\n"
 	done
-	printf "\n" >>report.txt
+	printf "\n" >>./tests/report.txt
 done
-

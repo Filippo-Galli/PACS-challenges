@@ -93,15 +93,18 @@ int main(int argc, char *argv[]) {
         idx = 0; 
     }
 
+    // you can avoid the loop and write
+    // std::vector<double> mesh_vec(rank <= remainder ? (row_eq_distr + 1)*n + 2*n : row_eq_distr*n + 2*n);
+
     // declare variable
-    std::vector<double> mesh_vec(temp[rank]*n != 0? temp[rank]*n + 2*n : 3*n, 0);
+    std::vector<double> mesh_vec(temp[rank]*n != 0? temp[rank]*n + 2*n : 3*n, 0); //isn't it always temp[rank]*n + 2*n?
     std::vector<double> total_mesh;
 
     // correctly resize meshes
     if(rank == 0){
       total_mesh = std::vector<double>(n*n, 0); 
 
-      Mesh templ_mesh(total_mesh, n, domain, argv[2]);
+      Mesh templ_mesh(total_mesh, n, domain, argv[2]); //why do you need templ_mesh? Try to avoid to save a copy of a possibly big matrix
 
       // add border condition if needed
       templ_mesh.add_boundary_condition(argv[4]);

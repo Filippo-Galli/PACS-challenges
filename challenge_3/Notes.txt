@@ -1,0 +1,8 @@
+- Why R instead of python? You could use pybind11 to communicate from c++ to pyhton
+
+- you should put the function definitions inside separate files instead of the main
+
+- the error should not depend on the number of mpi processes
+- the computational time increases with the number of mpi processes
+
+- solution in vtk not exported correctly
